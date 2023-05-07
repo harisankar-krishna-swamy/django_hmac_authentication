@@ -64,11 +64,10 @@ def hash_content(digest, content):
 
 def message_signature(message: str, secret: bytes, digest):
     if digest not in digests_map.keys():
-        raise ValidationError(f'Unsupported HMAC function {hash_func}')
-    decoded_secret = bytes.fromhex(secret)
+        raise ValidationError(f'Unsupported HMAC function {digest}')
     encoded_string_to_sign = message.encode(encoding)
     hashed_bytes = hmac.digest(
-        decoded_secret, encoded_string_to_sign, digest=digests_map[digest]
+        secret, encoded_string_to_sign, digest=digests_map[digest]
     )
     encoded_signature = base64.b64encode(hashed_bytes)
     signature = encoded_signature.decode(encoding)

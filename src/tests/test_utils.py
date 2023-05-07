@@ -1,3 +1,4 @@
+import base64
 import os
 
 from ddt import data, ddt, unpack
@@ -55,22 +56,25 @@ class TestUtils(TestCase):
         )
 
     @data(
-        ('hmac-sha512', 'ZaIJF7XWibQHwbbgx6qd5AIh78SB/+WPJIXFHYIqzs4='),
+        (
+            'hmac-sha512',
+            'BsDXXZ895Ko1KhznDwBhRBS0+g+5X+KoZz1b3R7JUXhQ/5r0Q+pN+FfhlL88KRiL3ya2RNw6GETHbzolHcuXAw==',
+        ),
         (
             'hmac-sha256',
-            'BsDXXZ895Ko1KhznDwBhRBS0+g+5X+KoZz1b3R7JUXhQ/5r0Q+pN+FfhlL88KRiL3ya2RNw6GETHbzolHcuXAw==',
+            'ZaIJF7XWibQHwbbgx6qd5AIh78SB/+WPJIXFHYIqzs4=',
         ),
     )
     @unpack
     def test_message_signature(
         self,
         digest='hmac-512',
-        calculated_b64signature='ZaIJF7XWibQHwbbgx6qd5AIh78SB/+WPJIXFHYIqzs4=',
+        expected_b64signature='ZaIJF7XWibQHwbbgx6qd5AIh78SB/+WPJIXFHYIqzs4=',
     ):
-        secret = 'test_secret'.encode('utf-8').hex()
+        secret = 'test_secret'.encode('utf-8')
         message = 'test_message'
         calculated_b64signature = message_signature(message, secret, digest)
         self.assertTrue(
-            calculated_b64signature == calculated_b64signature,
+            calculated_b64signature == expected_b64signature,
             f'Computed signature did not match expected for {digest}',
         )
