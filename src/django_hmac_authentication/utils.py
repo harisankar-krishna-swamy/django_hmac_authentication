@@ -1,3 +1,6 @@
+import base64
+import hashlib
+import hmac
 import os
 import secrets
 from hashlib import pbkdf2_hmac
@@ -12,6 +15,12 @@ encoding = 'utf-8'
 hash_func = 'sha256'
 
 user_model = settings.AUTH_USER_MODEL
+
+digests_map = {
+    'hmac-sha512': hashlib.sha512,
+    'hmac-sha384': hashlib.sha384,
+    'hmac-sha256': hashlib.sha256,
+}
 
 
 def aes_encrypt_hmac_secret() -> tuple:
@@ -38,3 +47,29 @@ def create_shared_secret_for_user(user: user_model):
     api_secret = ApiSecret(user=user, secret=encrypted.hex(), salt=salt.hex())
     api_secret.save()
     return api_secret
+
+
+def hash_content(digest, content):
+    if digest not in digests_map.keys():
+        raise ValidationError(f'Unsupported HMAC function {hash_func}')
+
+    func = digests_map[digest]
+    hasher = func()
+    hasher.update(content)
+    hashed_bytes = hasher.digest()
+    base64_encoded_bytes = base64.b64encode(hashed_bytes)
+    content_hash = base64_encoded_bytes.decode('utf-8')
+    return content_hash
+
+
+def message_signature(message: str, secret: bytes, digest):
+    if digest not in digests_map.keys():
+        raise ValidationError(f'Unsupported HMAC function {hash_func}')
+    decoded_secret = bytes.fromhex(secret)
+    encoded_string_to_sign = message.encode(encoding)
+    hashed_bytes = hmac.digest(
+        decoded_secret, encoded_string_to_sign, digest=digests_map[digest]
+    )
+    encoded_signature = base64.b64encode(hashed_bytes)
+    signature = encoded_signature.decode(encoding)
+    return signature
