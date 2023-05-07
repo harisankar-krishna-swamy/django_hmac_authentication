@@ -17,9 +17,7 @@ user_model = settings.AUTH_USER_MODEL
 def aes_encrypt_hmac_secret() -> tuple:
     salt = os.urandom(24)
     iv = salt[-16:]
-    enc_key = pbkdf2_hmac(
-        hash_func, 'settings.SECRET_KEY.encode(encoding)'.encode(encoding), salt, 1000
-    )
+    enc_key = pbkdf2_hmac(hash_func, settings.SECRET_KEY.encode(encoding), salt, 1000)
 
     hmac_secret = secrets.token_bytes(32)
     encrypted = aes_crypt(hmac_secret, enc_key, iv)
@@ -27,9 +25,7 @@ def aes_encrypt_hmac_secret() -> tuple:
 
 
 def aes_decrypt_hmac_secret(encrypted: bytes, salt: bytes) -> bytes:
-    enc_key = pbkdf2_hmac(
-        hash_func, 'settings.SECRET_KEY.encode(encoding)'.encode(encoding), salt, 1000
-    )
+    enc_key = pbkdf2_hmac(hash_func, settings.SECRET_KEY.encode(encoding), salt, 1000)
 
     return aes_crypt(encrypted, enc_key, salt[-16:], False)
 
