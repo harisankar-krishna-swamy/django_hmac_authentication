@@ -1,12 +1,12 @@
 # django_hmac_authentication
-
 Django hmac authentication with shared secret
 
 * Django model with api key and hmac secret
 * HMAC shared secret for user is protected with AES 
-* AES key and iv derived from Django `SECRET_KEY` and random salt
+* AES key and iv derived from Django `SECRET_KEY` and random salt per user
 * Authentication class `HMACAuthentication` 
 * Reject requests earlier than configured timeout
+* Supports `HMAC-SHA512`, `HMAC-384`, `HMAC-256`
 
 # 1. Github
 https://github.com/harisankar-krishna-swamy/django_hmac_authentication
@@ -49,11 +49,31 @@ REST_FRAMEWORK = {
     ],
 }
 ```
-# 4. License
+# 4. Signature fields
+
+* Hash of request body. Hash function depends on one of the supported methods in Authorization header
+* UTC time now in ISO 8601 format. Example `2023-05-07T14:15:37.862560+00:00`
+*  
+
+# 5. Authorization header
+* method: One of `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256`
+* api_key: Key used to identify the hmac secret used to generate signature
+* signature: base64 signature
+* request_utc: time in ISO 8601 set in signed string
+
+`Syntax`: method api_key;signature;request_utc
+
+Example
+```python
+'HMAC-SHA512 aa733037-e4c0-4f75-a864-df6c1966481b;6k3XaUREI6dDw6thyQWASJjzjsx1M7GOZAglguv0OElpRue1+gb7CK2n3JpzJGz9VcREw2y3rIW5zoZYEUY+0w==;2023-05-07T14:15:37.862560+00:00'
+```
+# 6. License
 Apache2 License
 
-# 5. See also
+# 6. See also
 https://www.okta.com/au/identity-101/hmac/
+
+https://docs.python.org/3/library/hashlib.html
 
 https://learn.microsoft.com/en-us/azure/communication-services/tutorials/hmac-header-tutorial?pivots=programming-language-python
 
