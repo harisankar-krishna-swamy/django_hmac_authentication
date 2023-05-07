@@ -1,3 +1,4 @@
+import base64
 import secrets
 
 import factory
@@ -27,7 +28,7 @@ class SuperUserFactory(DjangoModelFactory):
 
 
 @factory.django.mute_signals(post_save)
-class HMACSecretUserFactory(DjangoModelFactory):
+class ApiSecretUserFactory(DjangoModelFactory):
     class Meta:
         model = user_model
 
@@ -38,11 +39,11 @@ class HMACSecretUserFactory(DjangoModelFactory):
     is_superuser = False
 
 
-class HMACSecretFactory(DjangoModelFactory):
+class ApiSecretFactory(DjangoModelFactory):
     class Meta:
         model = ApiSecret
 
     user = factory.SubFactory(SuperUserFactory)
-    salt = test_salt
-    secret = test_encrypted
+    salt = base64.b64encode(test_salt).decode('utf-8')
+    secret = base64.b64encode(test_encrypted).decode('utf-8')
     revoked = False
