@@ -15,11 +15,12 @@ encoding = 'utf-8'
 hash_func = 'sha256'
 
 user_model = settings.AUTH_USER_MODEL
+max_hmacs_per_user = getattr(settings, 'MAX_HMACS_PER_USER', 10)
 
 digests_map = {
-    'hmac-sha512': hashlib.sha512,
-    'hmac-sha384': hashlib.sha384,
-    'hmac-sha256': hashlib.sha256,
+    'HMAC-SHA512': hashlib.sha512,
+    'HMAC-SHA384': hashlib.sha384,
+    'HMAC-SHA256': hashlib.sha256,
 }
 
 
@@ -40,18 +41,18 @@ def aes_decrypt_hmac_secret(encrypted: bytes, salt: bytes) -> bytes:
 
 
 def create_shared_secret_for_user(user: user_model):
-    n_user_tokens = ApiSecret.objects.filter(user=user).count()
-    if n_user_tokens >= 10:
+    n_user_hmacs = ApiSecret.objects.filter(user=user).count()
+    if n_user_hmacs >= max_hmacs_per_user:
         raise ValidationError('Maximum API secrets limit reached for user')
     hmac_secret, encrypted, enc_key, salt = aes_encrypt_hmac_secret()
     api_secret = ApiSecret(user=user, secret=encrypted.hex(), salt=salt.hex())
     api_secret.save()
-    return api_secret
+    return api_secret.id, base64.b64encode(hmac_secret).decode('utf-8')
 
 
 def hash_content(digest, content):
     if digest not in digests_map.keys():
-        raise ValidationError(f'Unsupported HMAC function {hash_func}')
+        raise ValidationError(f'Unsupported HMAC function {digest}')
 
     func = digests_map[digest]
     hasher = func()

@@ -41,6 +41,9 @@ INSTALLED_APPS = [
     "django_hmac_authentication",
 ]
 
+MAX_HMACS_PER_USER = 10
+HMAC_AUTH_REQUEST_TIMEOUT = 4
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

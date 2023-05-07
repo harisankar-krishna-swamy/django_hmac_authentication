@@ -1,22 +1,25 @@
 import base64
-import json
+import datetime
+from datetime import timezone
 
+from django.conf import settings
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
 
 from django_hmac_authentication.models import ApiSecret
 from django_hmac_authentication.utils import (
     aes_decrypt_hmac_secret,
-    digests_map,
     hash_content,
     message_signature,
 )
+
+auth_timeout = getattr(settings, 'HMAC_AUTH_REQUEST_TIMEOUT', 5)
 
 
 class HMACAuthentication(authentication.BaseAuthentication):
     authentication_methods = {'hmac-sha512', 'hmac-sha384', 'hmac-sha256'}
 
-    def api_auth_header_parts(self, content):
+    def parse_authorization_header(self, content):
         if not content:
             return None, None, None
         try:
@@ -52,7 +55,12 @@ class HMACAuthentication(authentication.BaseAuthentication):
         if not auth_hdr:
             return None
 
-        auth_method, key, signature, date_in = self.api_auth_header_parts(auth_hdr)
+        auth_method, key, signature, date_in = self.parse_authorization_header(auth_hdr)
+
+        utcnow = datetime.datetime.now(timezone.utc)
+        delta = utcnow - datetime.datetime.fromisoformat(date_in)
+        if delta.total_seconds() > auth_timeout:
+            raise AuthenticationFailed('Request timed out')
 
         api_secret = ApiSecret.objects.filter(id=key).first()
         if not api_secret or api_secret.revoked:

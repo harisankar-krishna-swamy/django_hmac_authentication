@@ -33,19 +33,19 @@ class TestUtils(TestCase):
 
     @data(
         (
-            'hmac-sha512',
+            'HMAC-SHA512',
             '/6lk2bC3td2pofMQOdywLPTmYQM6MP3b5gmGm9azYz8SIac1lqmITl5zJ1NdUzykMg/w2k55Ib/EznURl67rUw==',
         ),
         (
-            'hmac-sha384',
+            'HMAC-SHA384',
             'gYw6VAI5YA7ykdU5N1PSP/UCGLdN2znASixGZ5wlT0wbLGxnmahafTvbqWOIpCfB',
         ),
-        ('hmac-sha256', 'O3SR3AFqwaCy4CNyQCyGH6+kWSlAh+fL4J9wTVgtkx8='),
+        ('HMAC-SHA256', 'O3SR3AFqwaCy4CNyQCyGH6+kWSlAh+fL4J9wTVgtkx8='),
     )
     @unpack
     def test_hash_content(
         self,
-        digest='hmac-256',
+        digest='HMAC-SHA256',
         expected_b64hash='O3SR3AFqwaCy4CNyQCyGH6+kWSlAh+fL4J9wTVgtkx8',
     ):
         content = 'test_message'.encode('utf-8')
@@ -57,18 +57,18 @@ class TestUtils(TestCase):
 
     @data(
         (
-            'hmac-sha512',
+            'HMAC-SHA512',
             'BsDXXZ895Ko1KhznDwBhRBS0+g+5X+KoZz1b3R7JUXhQ/5r0Q+pN+FfhlL88KRiL3ya2RNw6GETHbzolHcuXAw==',
         ),
         (
-            'hmac-sha256',
+            'HMAC-SHA256',
             'ZaIJF7XWibQHwbbgx6qd5AIh78SB/+WPJIXFHYIqzs4=',
         ),
     )
     @unpack
     def test_message_signature(
         self,
-        digest='hmac-512',
+        digest='HMAC-SHA512',
         expected_b64signature='ZaIJF7XWibQHwbbgx6qd5AIh78SB/+WPJIXFHYIqzs4=',
     ):
         secret = 'test_secret'.encode('utf-8')
