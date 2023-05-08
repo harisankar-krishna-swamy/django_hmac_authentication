@@ -9,12 +9,12 @@ from django.utils.translation import gettext_lazy as _
 user_model = settings.AUTH_USER_MODEL
 
 
-class ApiSecret(models.Model):
+class ApiHMACKey(models.Model):
     created_at = DateTimeField(auto_now_add=True, db_index=True)
     modified_on = DateTimeField(auto_now=True, db_index=True)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     user = models.ForeignKey(
-        user_model, on_delete=models.CASCADE, related_name='api_secrets'
+        user_model, on_delete=models.CASCADE, related_name='api_hmac_keys'
     )
     secret = models.CharField(_('Secret'), max_length=512, null=False, editable=False)
     salt = models.CharField(_('Salt'), max_length=80, null=False, editable=False)
@@ -24,5 +24,5 @@ class ApiSecret(models.Model):
         return f'{self.user}'
 
     class Meta:
-        verbose_name = 'API Secret'
-        verbose_name_plural = 'API Secrets'
+        verbose_name = 'API HMAC Key'
+        verbose_name_plural = 'API HMAC Keys'

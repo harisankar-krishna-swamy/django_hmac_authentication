@@ -16,6 +16,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from django_hmac_authentication.views import CreateApiHMACKey
+
 urlpatterns = [
     path("admin/", admin.site.urls),
+    # django_hmac_authentication
+    path('obtain-hmac-api-key/', CreateApiHMACKey.as_view(), name='api_token_auth'),
 ]

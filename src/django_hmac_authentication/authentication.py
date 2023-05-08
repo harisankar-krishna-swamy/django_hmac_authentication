@@ -6,7 +6,7 @@ from django.conf import settings
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
 
-from django_hmac_authentication.models import ApiSecret
+from django_hmac_authentication.models import ApiHMACKey
 from django_hmac_authentication.utils import (
     aes_decrypt_hmac_secret,
     hash_content,
@@ -39,11 +39,11 @@ class HMACAuthentication(authentication.BaseAuthentication):
         except (AttributeError, ValueError):
             return None, None
 
-    def compute_request_signature(self, request, auth_method, date_in, api_secret):
+    def compute_request_signature(self, request, auth_method, date_in, hmac_key):
         body_hash = hash_content(auth_method, request.body)
         to_hash = f'{body_hash};{date_in}'
-        enc_secret = base64.b64decode(api_secret.secret.encode('utf-8'))
-        enc_salt = base64.b64decode(api_secret.salt.encode('utf-8'))
+        enc_secret = base64.b64decode(hmac_key.secret.encode('utf-8'))
+        enc_salt = base64.b64decode(hmac_key.salt.encode('utf-8'))
         secret = aes_decrypt_hmac_secret(enc_secret, enc_salt)
         computed_signature = message_signature(to_hash, secret, auth_method)
         return computed_signature
@@ -62,17 +62,17 @@ class HMACAuthentication(authentication.BaseAuthentication):
         if delta.total_seconds() > auth_timeout:
             raise AuthenticationFailed('Request timed out')
 
-        api_secret = ApiSecret.objects.filter(id=key).first()
-        if not api_secret or api_secret.revoked:
+        hmac_key = ApiHMACKey.objects.filter(id=key).first()
+        if not hmac_key or hmac_key.revoked:
             raise AuthenticationFailed('Invalid API Key')
 
-        if not api_secret.user.is_active:
+        if not hmac_key.user.is_active:
             raise AuthenticationFailed('User is inactive')
 
         computed_signature = self.compute_request_signature(
-            request, auth_method, date_in, api_secret
+            request, auth_method, date_in, hmac_key
         )
         if not computed_signature == signature:
             raise AuthenticationFailed('Message verification failed')
 
-        return api_secret.user, None
+        return hmac_key.user, None

@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
 
-from django_hmac_authentication.serializers import ApiSecretResponseSerializer
+from django_hmac_authentication.serializers import ApiHMACKeyResponseSerializer
 from django_hmac_authentication.utils import create_shared_secret_for_user
 
 user_model = get_user_model()
@@ -24,7 +24,7 @@ class Command(BaseCommand):
         try:
             user = user_model.objects.get(username=username)
             api_key, secret = create_shared_secret_for_user(user)
-            token_resp = ApiSecretResponseSerializer(
+            token_resp = ApiHMACKeyResponseSerializer(
                 {'api_key': api_key, 'api_secret': secret}
             ).data
             self.stdout.write(self.style.SUCCESS(json.dumps(token_resp)))

@@ -15,16 +15,16 @@ from django_hmac_authentication.utils import (
     hash_content,
     message_signature,
 )
-from tests.factories import ApiSecretFactory, ApiSecretUserFactory
+from tests.factories import ApiHMACKeyFactory, ApiHMACKeyUserFactory
 
 
 @ddt
 class TestHMACAuthentication(TestCase):
     def setUp(self) -> None:
-        self.user = ApiSecretUserFactory()
-        self.api_secret = ApiSecretFactory(user=self.user)
-        self.enc_secret = base64.b64decode(self.api_secret.secret.encode('utf-8'))
-        self.enc_salt = base64.b64decode(self.api_secret.salt.encode('utf-8'))
+        self.user = ApiHMACKeyUserFactory()
+        self.hmac_key = ApiHMACKeyFactory(user=self.user)
+        self.enc_secret = base64.b64decode(self.hmac_key.secret.encode('utf-8'))
+        self.enc_salt = base64.b64decode(self.hmac_key.salt.encode('utf-8'))
         self.auth = HMACAuthentication()
         self.auth_header = 'HTTP_AUTHORIZATION'
 
@@ -85,7 +85,7 @@ class TestHMACAuthentication(TestCase):
 
     @data(*test_data__hmac_http_methods)
     @unpack
-    def test_api_secret__hmacauthenticate__valid(
+    def test_api__hmacauthenticate__valid(
         self, digest='HMAC-SHA512', http_method='POST'
     ):
         factory = APIRequestFactory()
@@ -96,7 +96,7 @@ class TestHMACAuthentication(TestCase):
         signature, utc_8601 = self._request_auth_header_fields(req_data, digest)
 
         headers = {
-            f'{self.auth_header}': f'{digest} {self.api_secret.id};{signature};{utc_8601}',
+            f'{self.auth_header}': f'{digest} {self.hmac_key.id};{signature};{utc_8601}',
             'Content-Type': 'application/json',
         }
         if http_method == 'GET':
@@ -120,7 +120,7 @@ class TestHMACAuthentication(TestCase):
         user, auth = HMACAuthentication().authenticate(request)
         self.assertEqual(
             user,
-            self.api_secret.user,
+            self.hmac_key.user,
             f'User did not match expected after authentication with digest {digest} http_method {http_method}',
         )
         self.assertEqual(
@@ -152,14 +152,14 @@ class TestHMACAuthentication(TestCase):
             )
 
     def test_hmac_authentication__revoked(self):
-        self.api_secret.revoked = True
-        self.api_secret.save()
-        self.api_secret.refresh_from_db()
+        self.hmac_key.revoked = True
+        self.hmac_key.save()
+        self.hmac_key.refresh_from_db()
         factory = APIRequestFactory()
         req_data = ''
         signature, utc_8601 = self._request_auth_header_fields(req_data, 'HMAC-SHA512')
         headers = {
-            f'{self.auth_header}': f'hmac-sha512 {self.api_secret.id};{signature};{utc_8601}',
+            f'{self.auth_header}': f'hmac-sha512 {self.hmac_key.id};{signature};{utc_8601}',
             'Content-Type': 'application/json',
         }
         request = factory.get('api/commons/languages/', data=None, **headers)
@@ -174,7 +174,7 @@ class TestHMACAuthentication(TestCase):
         req_data = ''
         signature, utc_8601 = self._request_auth_header_fields(req_data, 'HMAC-SHA512')
         headers = {
-            f'{self.auth_header}': f'hmac-sha512 {self.api_secret.id};{signature};{utc_8601}',
+            f'{self.auth_header}': f'hmac-sha512 {self.hmac_key.id};{signature};{utc_8601}',
             'Content-Type': 'application/json',
         }
         request = factory.get('api/commons/languages/', data=None, **headers)
@@ -191,7 +191,7 @@ class TestHMACAuthentication(TestCase):
             )
 
         headers = {
-            f'{self.auth_header}': f'hmac-sha512 {self.api_secret.id};{signature};{utc_8601}',
+            f'{self.auth_header}': f'hmac-sha512 {self.hmac_key.id};{signature};{utc_8601}',
             'Content-Type': 'application/json',
         }
         request = factory.get('api/commons/languages/', data=None, **headers)
