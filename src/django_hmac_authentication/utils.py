@@ -9,7 +9,7 @@ from django.conf import settings
 from rest_framework.exceptions import ValidationError
 
 from django_hmac_authentication.aes import aes_crypt
-from django_hmac_authentication.models import ApiSecret
+from django_hmac_authentication.models import ApiHMACKey
 
 encoding = 'utf-8'
 hash_func = 'sha256'
@@ -41,11 +41,15 @@ def aes_decrypt_hmac_secret(encrypted: bytes, salt: bytes) -> bytes:
 
 
 def create_shared_secret_for_user(user: user_model):
-    n_user_hmacs = ApiSecret.objects.filter(user=user).count()
+    n_user_hmacs = ApiHMACKey.objects.filter(user=user).count()
     if n_user_hmacs >= max_hmacs_per_user:
         raise ValidationError('Maximum API secrets limit reached for user')
     hmac_secret, encrypted, enc_key, salt = aes_encrypt_hmac_secret()
-    api_secret = ApiSecret(user=user, secret=encrypted.hex(), salt=salt.hex())
+    api_secret = ApiHMACKey(
+        user=user,
+        secret=base64.b64encode(encrypted).decode('utf-8'),
+        salt=base64.b64encode(salt).decode('utf-8'),
+    )
     api_secret.save()
     return api_secret.id, base64.b64encode(hmac_secret).decode('utf-8')
 

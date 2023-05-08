@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 user_model = settings.AUTH_USER_MODEL
 
 
-class ApiSecret(models.Model):
+class ApiHMACKey(models.Model):
     created_at = DateTimeField(auto_now_add=True, db_index=True)
     modified_on = DateTimeField(auto_now=True, db_index=True)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)

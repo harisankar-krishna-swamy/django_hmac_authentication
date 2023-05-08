@@ -2,10 +2,10 @@
 
 from django.contrib import admin
 
-from django_hmac_authentication.models import ApiSecret
+from django_hmac_authentication.models import ApiHMACKey
 
 
-class AdminApiSecret(admin.ModelAdmin):
+class AdminApiHMACKey(admin.ModelAdmin):
     list_per_page = 10
     list_display = (
         'user',
@@ -32,4 +32,4 @@ class AdminApiSecret(admin.ModelAdmin):
         return not obj.revoked
 
 
-admin.site.register(ApiSecret, AdminApiSecret)
+admin.site.register(ApiHMACKey, AdminApiHMACKey)

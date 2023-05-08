@@ -7,7 +7,7 @@ from django.contrib.auth.hashers import make_password
 from django.db.models.signals import post_save
 from factory.django import DjangoModelFactory
 
-from django_hmac_authentication.models import ApiSecret
+from django_hmac_authentication.models import ApiHMACKey
 from django_hmac_authentication.utils import aes_encrypt_hmac_secret
 
 user_model = get_user_model()
@@ -41,7 +41,7 @@ class ApiSecretUserFactory(DjangoModelFactory):
 
 class ApiSecretFactory(DjangoModelFactory):
     class Meta:
-        model = ApiSecret
+        model = ApiHMACKey
 
     user = factory.SubFactory(SuperUserFactory)
     salt = base64.b64encode(test_salt).decode('utf-8')

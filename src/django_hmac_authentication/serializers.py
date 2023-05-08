@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 
-class ApiSecretResponseSerializer(serializers.Serializer):
+class ApiHMACKeyResponseSerializer(serializers.Serializer):
     api_key = serializers.CharField()
     api_secret = serializers.CharField()
     message = serializers.CharField(

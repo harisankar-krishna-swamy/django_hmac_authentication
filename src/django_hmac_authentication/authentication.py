@@ -6,7 +6,7 @@ from django.conf import settings
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
 
-from django_hmac_authentication.models import ApiSecret
+from django_hmac_authentication.models import ApiHMACKey
 from django_hmac_authentication.utils import (
     aes_decrypt_hmac_secret,
     hash_content,
@@ -62,7 +62,7 @@ class HMACAuthentication(authentication.BaseAuthentication):
         if delta.total_seconds() > auth_timeout:
             raise AuthenticationFailed('Request timed out')
 
-        api_secret = ApiSecret.objects.filter(id=key).first()
+        api_secret = ApiHMACKey.objects.filter(id=key).first()
         if not api_secret or api_secret.revoked:
             raise AuthenticationFailed('Invalid API Key')
 
