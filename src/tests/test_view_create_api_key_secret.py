@@ -3,7 +3,7 @@ from http import HTTPStatus
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 
-from django_hmac_authentication.views import CreateApiKey
+from django_hmac_authentication.views import CreateApiHMACKey
 from tests.factories import ApiHMACKeyUserFactory, test_password
 
 factory = APIRequestFactory()
@@ -12,7 +12,7 @@ factory = APIRequestFactory()
 class TestViewCreateApiKey(TestCase):
     def setUp(self) -> None:
         self.user = ApiHMACKeyUserFactory()
-        self.view = CreateApiKey.as_view()
+        self.view = CreateApiHMACKey.as_view()
 
     def _assert_http_ok_key_reponse(self, response):
         self.assertEqual(

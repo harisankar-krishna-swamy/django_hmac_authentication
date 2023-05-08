@@ -5,7 +5,7 @@ from .serializers import ApiHMACKeyResponseSerializer
 from .utils import create_shared_secret_for_user
 
 
-class CreateApiKey(ObtainAuthToken):
+class CreateApiHMACKey(ObtainAuthToken):
     """
     Create API access HMAC key and secret for user.
     """
