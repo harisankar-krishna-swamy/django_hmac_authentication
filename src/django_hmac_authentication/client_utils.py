@@ -25,6 +25,9 @@ def hash_content(digest: str, content: bytes):
 
     @return: base64 of hash
     """
+    if not content:
+        return None
+
     if digest not in digests_map.keys():
         raise ValidationError(f'Unsupported HMAC function {digest}')
 
@@ -82,10 +85,13 @@ def hmac_sign(req_data: dict, api_secret: bytes, digest: str):
 
     @return: signature string and ISO8601 time string for authorization header
     """
-    body = '' if not req_data else json.dumps(req_data)
-    hash_body = hash_content(digest, body.encode('utf-8'))
     utc_8601 = (
         datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
     )
-    signature = message_signature(f'{hash_body};{utc_8601}', api_secret, digest)
+    string_to_sign = f';{utc_8601}'
+    body = None if not req_data else json.dumps(req_data).encode('utf-8')
+    body_hash = hash_content(digest, body)
+    if body_hash:
+        string_to_sign = f'{body_hash}' + string_to_sign
+    signature = message_signature(string_to_sign, api_secret, digest)
     return signature, utc_8601

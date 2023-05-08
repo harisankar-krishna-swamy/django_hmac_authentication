@@ -1,5 +1,6 @@
 import base64
 import datetime
+import json
 from datetime import timezone
 
 from django.conf import settings
@@ -14,7 +15,7 @@ auth_timeout = getattr(settings, 'HMAC_AUTH_REQUEST_TIMEOUT', 5)
 
 
 class HMACAuthentication(authentication.BaseAuthentication):
-    authentication_methods = {'hmac-sha512', 'hmac-sha384', 'hmac-sha256'}
+    authentication_methods = {'HMAC-SHA512', 'HMAC-SHA384', 'HMAC-SHA256'}
 
     def parse_authorization_header(self, content):
         if not content:
@@ -23,7 +24,7 @@ class HMACAuthentication(authentication.BaseAuthentication):
             auth_method, rest = content.split()
             if (
                 not auth_method
-                or auth_method.lower() not in self.authentication_methods
+                or auth_method not in self.authentication_methods
                 or not rest
             ):
                 return None, None
@@ -37,12 +38,16 @@ class HMACAuthentication(authentication.BaseAuthentication):
             return None, None
 
     def compute_request_signature(self, request, auth_method, date_in, hmac_key):
-        body_hash = hash_content(auth_method, request.body)
-        to_hash = f'{body_hash};{date_in}'
+        string_to_sign = f';{date_in}'
+        data = getattr(request, 'data', None)
+        body = json.dumps(data).encode('utf-8') if data else None
+        body_hash = hash_content(auth_method, body)
+        if body_hash:
+            string_to_sign = f'{body_hash}' + string_to_sign
         enc_secret = base64.b64decode(hmac_key.secret.encode('utf-8'))
         enc_salt = base64.b64decode(hmac_key.salt.encode('utf-8'))
         secret = aes_decrypt_hmac_secret(enc_secret, enc_salt)
-        computed_signature = message_signature(to_hash, secret, auth_method)
+        computed_signature = message_signature(string_to_sign, secret, auth_method)
         return computed_signature
 
     def authenticate(self, request):

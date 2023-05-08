@@ -1,4 +1,3 @@
-import base64
 import os
 
 from ddt import data, ddt, unpack
@@ -33,22 +32,27 @@ class TestUtils(TestCase):
     @data(
         (
             'HMAC-SHA512',
+            'test_message',
             '/6lk2bC3td2pofMQOdywLPTmYQM6MP3b5gmGm9azYz8SIac1lqmITl5zJ1NdUzykMg/w2k55Ib/EznURl67rUw==',
         ),
         (
             'HMAC-SHA384',
+            'test_message',
             'gYw6VAI5YA7ykdU5N1PSP/UCGLdN2znASixGZ5wlT0wbLGxnmahafTvbqWOIpCfB',
         ),
-        ('HMAC-SHA256', 'O3SR3AFqwaCy4CNyQCyGH6+kWSlAh+fL4J9wTVgtkx8='),
+        ('HMAC-SHA256', 'test_message', 'O3SR3AFqwaCy4CNyQCyGH6+kWSlAh+fL4J9wTVgtkx8='),
+        ('HMAC-SHA256', '', None),
+        ('HMAC-SHA256', None, None),
     )
     @unpack
     def test_hash_content(
         self,
         digest='HMAC-SHA256',
+        content='test_message',
         expected_b64hash='O3SR3AFqwaCy4CNyQCyGH6+kWSlAh+fL4J9wTVgtkx8',
     ):
-        content = 'test_message'.encode('utf-8')
-        calculated_b64hash = hash_content(digest, content)
+        content_by = content.encode('utf-8') if content else None
+        calculated_b64hash = hash_content(digest, content_by)
         self.assertTrue(
             calculated_b64hash == expected_b64hash,
             f'Computed hash did not match expected for {digest}',
