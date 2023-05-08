@@ -6,7 +6,7 @@ Django hmac authentication with shared secret
 * AES key and iv derived from Django `SECRET_KEY` and random salt per user
 * Authentication class `HMACAuthentication` 
 * Reject requests earlier than configured timeout
-* Supports `HMAC-SHA512`, `HMAC-384`, `HMAC-256`
+* Supports `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256`
 
 # 1. Github
 https://github.com/harisankar-krishna-swamy/django_hmac_authentication
@@ -60,7 +60,8 @@ urlpatterns = [
     ...
 ]
 ```
-Run migrations
+## 3.3 Run migrations 
+
 ```python
 python manage.py migrate django_hmac_authentication
 ```
@@ -82,7 +83,7 @@ curl -X POST -H "Content-Type: application/json" -d '{"username":"bob", "passwor
 {"api_key":"7ebc25d7-d237-4f90-b4ad-98f0c228fc1e","api_secret":"EDQppq0B3rIxvaA7PyPUHPF6kiXTnnbvnMiZDzYFSRA=","message":"These credentials will be lost forever if not stored now"}
 ```
 
-# 5. Using the key and secret in client code
+# 5. Sign requests client-side
 
 ## 5.1 Python client
 See `example_django_project/example_python_client.py`
