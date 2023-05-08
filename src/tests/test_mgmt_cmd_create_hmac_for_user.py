@@ -4,7 +4,7 @@ from io import StringIO
 from django.core.management import call_command
 from django.test import TestCase
 
-from tests.factories import ApiSecretUserFactory
+from tests.factories import ApiHMACKeyUserFactory
 
 
 def call_mgmt_command(cmd: str, *args, **kwargs):
@@ -19,7 +19,7 @@ class TestMgmtCmdCreateHMACForUser(TestCase):
     """
 
     def setUp(self) -> None:
-        self.user = ApiSecretUserFactory()
+        self.user = ApiHMACKeyUserFactory()
         self.cmd = 'create_hmac_for_user'
 
     def test_non_existing_user(self):

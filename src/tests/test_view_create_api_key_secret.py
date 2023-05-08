@@ -4,14 +4,14 @@ from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 
 from django_hmac_authentication.views import CreateApiKey
-from tests.factories import ApiSecretUserFactory, test_password
+from tests.factories import ApiHMACKeyUserFactory, test_password
 
 factory = APIRequestFactory()
 
 
 class TestViewCreateApiKey(TestCase):
     def setUp(self) -> None:
-        self.user = ApiSecretUserFactory()
+        self.user = ApiHMACKeyUserFactory()
         self.view = CreateApiKey.as_view()
 
     def _assert_http_ok_key_reponse(self, response):
@@ -26,7 +26,7 @@ class TestViewCreateApiKey(TestCase):
             self.assertIn(item, response.data, f'item {item} missing in response')
             self.assertTrue(response.data[item], f'item {item} is empty in response')
 
-    def test_view__create_api_secret(self):
+    def test_view__create_api_hmac_key(self):
         data = {'username': self.user.username, 'password': test_password}
         request = factory.post('/', data=data, format='json')
         response = self.view(request)

@@ -28,7 +28,7 @@ class SuperUserFactory(DjangoModelFactory):
 
 
 @factory.django.mute_signals(post_save)
-class ApiSecretUserFactory(DjangoModelFactory):
+class ApiHMACKeyUserFactory(DjangoModelFactory):
     class Meta:
         model = user_model
 
@@ -39,7 +39,7 @@ class ApiSecretUserFactory(DjangoModelFactory):
     is_superuser = False
 
 
-class ApiSecretFactory(DjangoModelFactory):
+class ApiHMACKeyFactory(DjangoModelFactory):
     class Meta:
         model = ApiHMACKey
 

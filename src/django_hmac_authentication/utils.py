@@ -36,7 +36,6 @@ def aes_encrypt_hmac_secret() -> tuple:
 
 def aes_decrypt_hmac_secret(encrypted: bytes, salt: bytes) -> bytes:
     enc_key = pbkdf2_hmac(hash_func, settings.SECRET_KEY.encode(encoding), salt, 1000)
-
     return aes_crypt(encrypted, enc_key, salt[-16:], False)
 
 
@@ -45,13 +44,13 @@ def create_shared_secret_for_user(user: user_model):
     if n_user_hmacs >= max_hmacs_per_user:
         raise ValidationError('Maximum API secrets limit reached for user')
     hmac_secret, encrypted, enc_key, salt = aes_encrypt_hmac_secret()
-    api_secret = ApiHMACKey(
+    hmac_key = ApiHMACKey(
         user=user,
         secret=base64.b64encode(encrypted).decode('utf-8'),
         salt=base64.b64encode(salt).decode('utf-8'),
     )
-    api_secret.save()
-    return api_secret.id, base64.b64encode(hmac_secret).decode('utf-8')
+    hmac_key.save()
+    return hmac_key.id, base64.b64encode(hmac_secret).decode('utf-8')
 
 
 def hash_content(digest, content):

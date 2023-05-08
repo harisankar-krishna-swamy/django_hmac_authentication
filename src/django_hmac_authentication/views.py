@@ -7,7 +7,7 @@ from .utils import create_shared_secret_for_user
 
 class CreateApiKey(ObtainAuthToken):
     """
-    Create API access key and secret for user.
+    Create API access HMAC key and secret for user.
     """
 
     def post(self, request, *args, **kwargs):
