@@ -83,7 +83,9 @@ curl -X POST -H "Content-Type: application/json" -d '{"username":"bob", "passwor
 ```
 
 # 5. Using the key and secret in client code
-TODO
+
+## 5.1 Python client
+See `example_django_project/example_python_client.py`
 
 # 6. Signature fields
 

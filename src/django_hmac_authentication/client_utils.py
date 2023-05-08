@@ -21,6 +21,8 @@ def hash_content(digest: str, content: bytes):
     Compute hash of content using hash function of digest
 
     @param digest: HMAC method. One of 'HMAC-SHA512', 'HMAC-SHA384', 'HMAC-SHA256'
+    @param content: bytes to hash
+
     @return: base64 of hash
     """
     if digest not in digests_map.keys():
@@ -42,6 +44,7 @@ def message_signature(message: str, secret: bytes, digest):
     @param message: string to sign
     @param secret: Shared hmac secret key to sign with
     @param digest: HMAC method. One of 'HMAC-SHA512', 'HMAC-SHA384', 'HMAC-SHA256'
+
     @return: base64 string of signature
     """
     if digest not in digests_map.keys():
@@ -71,7 +74,7 @@ def compose_authorization_header(digest, api_key, signature, utc_8601):
 
 def hmac_sign(req_data: dict, api_secret: bytes, digest: str):
     """
-    Builds a signature from request data (json) and utc time in ISO8601 format string
+    Signature request data (json) and utc now time in ISO8601 format string
 
     @param req_data: data dict that goes into request body as json
     @param api_secret: api_secret for user
