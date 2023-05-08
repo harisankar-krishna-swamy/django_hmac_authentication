@@ -49,13 +49,27 @@ REST_FRAMEWORK = {
     ],
 }
 ```
-# 4. Signature fields
+
+Run migrations
+```python
+python manage.py migrate django_hmac_authentication
+```
+# 4. Usage
+
+### 4.1 management command
+Use management command to create a HMAC API key with secret
+```python
+python manage.py create_hmac_for_user bob
+{"api_key": "f4c3801c-a277-4fcb-92bb-44cb814026f6", "api_secret": "vEOQRdvaK4jyeLKGNP9oqpYTUvt/GZWbGG6iNmnDh8c=", "message": "These credentials will be lost forever if not stored now"}
+```
+
+# 5. Signature fields
 
 * Hash of request body. Hash function depends on one of the supported methods in Authorization header
 * UTC time now in ISO 8601 format. Example `2023-05-07T14:15:37.862560+00:00`
 *  
 
-# 5. Authorization header
+# 6. Authorization header
 * method: One of `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256`
 * api_key: Key used to identify the hmac secret used to generate signature
 * signature: base64 signature
@@ -67,10 +81,10 @@ Example
 ```python
 'HMAC-SHA512 aa733037-e4c0-4f75-a864-df6c1966481b;6k3XaUREI6dDw6thyQWASJjzjsx1M7GOZAglguv0OElpRue1+gb7CK2n3JpzJGz9VcREw2y3rIW5zoZYEUY+0w==;2023-05-07T14:15:37.862560+00:00'
 ```
-# 6. License
+# 7. License
 Apache2 License
 
-# 6. See also
+# 8. See also
 https://www.okta.com/au/identity-101/hmac/
 
 https://docs.python.org/3/library/hashlib.html
