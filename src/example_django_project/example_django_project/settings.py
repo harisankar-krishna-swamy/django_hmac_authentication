@@ -38,11 +38,18 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # 3rd party apps
+    "rest_framework",
     "django_hmac_authentication",
 ]
 
 MAX_HMACS_PER_USER = 10
 HMAC_AUTH_REQUEST_TIMEOUT = 4
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'django_hmac_authentication.authentication.HMACAuthentication',
+    ],
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

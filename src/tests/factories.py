@@ -8,7 +8,7 @@ from django.db.models.signals import post_save
 from factory.django import DjangoModelFactory
 
 from django_hmac_authentication.models import ApiHMACKey
-from django_hmac_authentication.utils import aes_encrypt_hmac_secret
+from django_hmac_authentication.server_utils import aes_encrypt_hmac_secret
 
 user_model = get_user_model()
 test_password = secrets.token_hex()

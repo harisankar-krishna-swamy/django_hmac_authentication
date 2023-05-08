@@ -5,11 +5,10 @@ from ddt import data, ddt, unpack
 from django.test import TestCase
 
 from django_hmac_authentication.aes import aes_crypt
-from django_hmac_authentication.utils import (
+from django_hmac_authentication.client_utils import hash_content, message_signature
+from django_hmac_authentication.server_utils import (
     aes_decrypt_hmac_secret,
     aes_encrypt_hmac_secret,
-    hash_content,
-    message_signature,
 )
 
 

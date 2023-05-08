@@ -6,12 +6,9 @@ from django.conf import settings
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
 
+from django_hmac_authentication.client_utils import hash_content, message_signature
 from django_hmac_authentication.models import ApiHMACKey
-from django_hmac_authentication.utils import (
-    aes_decrypt_hmac_secret,
-    hash_content,
-    message_signature,
-)
+from django_hmac_authentication.server_utils import aes_decrypt_hmac_secret
 
 auth_timeout = getattr(settings, 'HMAC_AUTH_REQUEST_TIMEOUT', 5)
 

@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 
 from django_hmac_authentication.views import CreateApiHMACKey
 
@@ -22,4 +22,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # django_hmac_authentication
     path('obtain-hmac-api-key/', CreateApiHMACKey.as_view(), name='api_token_auth'),
+    # an app with view
+    path('accounts/', include('accounts.urls')),
 ]

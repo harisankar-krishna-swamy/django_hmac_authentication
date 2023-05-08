@@ -7,7 +7,7 @@ from django.db import transaction
 from rest_framework.exceptions import ValidationError
 
 from django_hmac_authentication.serializers import ApiHMACKeyResponseSerializer
-from django_hmac_authentication.utils import create_shared_secret_for_user
+from django_hmac_authentication.server_utils import create_shared_secret_for_user
 
 user_model = get_user_model()
 

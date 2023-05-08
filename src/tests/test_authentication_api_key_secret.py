@@ -10,11 +10,8 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.test import APIRequestFactory
 
 from django_hmac_authentication.authentication import HMACAuthentication
-from django_hmac_authentication.utils import (
-    aes_decrypt_hmac_secret,
-    hash_content,
-    message_signature,
-)
+from django_hmac_authentication.client_utils import hash_content, message_signature
+from django_hmac_authentication.server_utils import aes_decrypt_hmac_secret
 from tests.factories import ApiHMACKeyFactory, ApiHMACKeyUserFactory
 
 
@@ -85,7 +82,7 @@ class TestHMACAuthentication(TestCase):
 
     @data(*test_data__hmac_http_methods)
     @unpack
-    def test_api__hmacauthenticate__valid(
+    def test_api__hmac_authenticate__valid(
         self, digest='HMAC-SHA512', http_method='POST'
     ):
         factory = APIRequestFactory()
@@ -174,7 +171,7 @@ class TestHMACAuthentication(TestCase):
         req_data = ''
         signature, utc_8601 = self._request_auth_header_fields(req_data, 'HMAC-SHA512')
         headers = {
-            f'{self.auth_header}': f'hmac-sha512 {self.hmac_key.id};{signature};{utc_8601}',
+            f'{self.auth_header}': f'HMAC-SHA512 {self.hmac_key.id};{signature};{utc_8601}',
             'Content-Type': 'application/json',
         }
         request = factory.get('api/commons/languages/', data=None, **headers)
@@ -184,14 +181,14 @@ class TestHMACAuthentication(TestCase):
     def test_hmac_authentication__timeout(self):
         factory = APIRequestFactory()
         req_data = ''
-        initial_datetime = datetime.datetime.utcnow() - timedelta(seconds=4)
+        initial_datetime = datetime.datetime.utcnow() - timedelta(seconds=6)
         with freeze_time(initial_datetime):
             signature, utc_8601 = self._request_auth_header_fields(
                 req_data, 'HMAC-SHA512'
             )
 
         headers = {
-            f'{self.auth_header}': f'hmac-sha512 {self.hmac_key.id};{signature};{utc_8601}',
+            f'{self.auth_header}': f'HMAC-SHA512 {self.hmac_key.id};{signature};{utc_8601}',
             'Content-Type': 'application/json',
         }
         request = factory.get('api/commons/languages/', data=None, **headers)
