@@ -96,6 +96,146 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "PUT HMAC",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "{{header}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n   \"a\":1,\n   \"b\":2\n}"
+				},
+				"url": {
+					"raw": "127.0.0.1:8000/accounts/an-authenticated-view/",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"accounts",
+						"an-authenticated-view",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PATCH HMAC",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "{{header}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n   \"a\":1,\n   \"b\":2\n}"
+				},
+				"url": {
+					"raw": "127.0.0.1:8000/accounts/an-authenticated-view/",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"accounts",
+						"an-authenticated-view",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE HMAC",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{header}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "127.0.0.1:8000/accounts/an-authenticated-view",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"accounts",
+						"an-authenticated-view"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
