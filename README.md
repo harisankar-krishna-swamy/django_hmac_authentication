@@ -85,7 +85,13 @@ curl -X POST -H "Content-Type: application/json" -d '{"username":"bob", "passwor
 
 # 4. Sign requests client-side
 
-## 4.1 Python client
+## 4.1 Javascript client
+See `example_django_project/javascript_topman_collection` folder
+
+A postman collection with environment is provided which can be imported to Postman.
+A prerequest script for generating the signature is provided (same as included in postman collection).
+
+## 4.2 Python client
 See `example_django_project/example_python_client.py`
 
 # 5. Signature
