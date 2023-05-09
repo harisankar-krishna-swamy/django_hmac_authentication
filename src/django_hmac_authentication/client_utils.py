@@ -84,7 +84,9 @@ def prepare_string_to_sign(data: dict, utc_8601: str, digest: str):
 
     @return: string to sign
     """
-    body = None if not data else json.dumps(data).encode(encoding)
+    body = (
+        None if not data else json.dumps(data, separators=(',', ':')).encode(encoding)
+    )
     body_hash = hash_content(digest, body)
     string_to_sign = f';{utc_8601}'
 
