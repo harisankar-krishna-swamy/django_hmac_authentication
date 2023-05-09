@@ -21,7 +21,7 @@ from django_hmac_authentication.views import CreateApiHMACKey
 urlpatterns = [
     path("admin/", admin.site.urls),
     # django_hmac_authentication
-    path('obtain-hmac-api-key/', CreateApiHMACKey.as_view(), name='api_token_auth'),
+    path('obtain-hmac-api-key/', CreateApiHMACKey.as_view(), name='api_hmac_auth'),
     # an app with view
     path('accounts/', include('accounts.urls')),
 ]

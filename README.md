@@ -7,7 +7,7 @@ Django hmac authentication with shared secret
 * Authentication class `HMACAuthentication` 
 * Reject requests earlier than configured timeout
 * Supports `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256`
-
+* HMAC secret can be shared out of band or obtained with a configured url
 # 1. Github
 https://github.com/harisankar-krishna-swamy/django_hmac_authentication
 
@@ -39,7 +39,11 @@ INSTALLED_APPS = [
 
 
 REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
         'django_hmac_authentication.authentication.HMACAuthentication',
     ],
 }

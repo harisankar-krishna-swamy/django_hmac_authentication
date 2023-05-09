@@ -40,14 +40,19 @@ INSTALLED_APPS = [
     # 3rd party apps
     "rest_framework",
     "django_hmac_authentication",
+    "accounts",
 ]
 
 MAX_HMACS_PER_USER = 10
 HMAC_AUTH_REQUEST_TIMEOUT = 4
 
 REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'django_hmac_authentication.authentication.HMACAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
 }
 
