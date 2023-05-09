@@ -14,6 +14,7 @@ requires-python = ">=3.9.2"
 dependencies = [
     "Django>=3.2.18",
     "djangorestframework>=3.12.4",
+    "cryptography>=3.4.8"
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
