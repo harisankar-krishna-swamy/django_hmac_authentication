@@ -1,0 +1,137 @@
+{
+	"info": {
+		"_postman_id": "43bc933d-fca5-440f-aef1-b84ada0d1866",
+		"name": "django-hmac-auth",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13993361"
+	},
+	"item": [
+		{
+			"name": "GET HMAC",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{header}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "127.0.0.1:8000/accounts/an-authenticated-view",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"accounts",
+						"an-authenticated-view"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST HMAC",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "{{header}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n   \"a\":1,\n   \"b\":2\n}"
+				},
+				"url": {
+					"raw": "127.0.0.1:8000/accounts/an-authenticated-view/",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"accounts",
+						"an-authenticated-view",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"var api_key = pm.environment.get(\"api_key\");",
+					"var secret = CryptoJS.enc.Base64.parse(pm.environment.get(\"api_secret\"));",
+					"var date = new Date().toISOString();",
+					"date = date.replace(\"Z\", \"+00:00\");",
+					"",
+					"var body = pm.request.body;",
+					"body = (!body.raw) ? null: JSON.stringify(JSON.parse(body.raw));",
+					"var body_hash = (body != null) ? CryptoJS.enc.Base64.stringify(CryptoJS.SHA256(CryptoJS.enc.Utf8.parse(body))): null;",
+					"",
+					"var string_to_sign = \";\"+date;",
+					"string_to_sign = (body_hash) ? body_hash + string_to_sign: string_to_sign; ",
+					"",
+					"var signature = CryptoJS.HmacSHA256(string_to_sign, secret);",
+					"signature = CryptoJS.enc.Base64.stringify(signature);",
+					"",
+					"var header = \"HMAC-SHA256 \" + api_key + \";\" + signature + \";\" + date",
+					"pm.environment.set(\"header\", header);"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
