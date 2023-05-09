@@ -8,15 +8,13 @@ Django hmac authentication with shared secret
 * Reject requests earlier than configured timeout
 * Supports `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256`
 * HMAC secret can be shared out of band or obtained with a configured url
-# 1. Github
-https://github.com/harisankar-krishna-swamy/django_hmac_authentication
 
-# 2. Install
+# 1. Install
 `pip install django_hmac_authentication`
 
-# 3. Configuration
+# 2. Configuration
 
-## 3.1 settings.py
+## 2.1 settings.py
 
 * Add `MAX_HMACS_PER_USER`  
   Default: 10  
@@ -49,7 +47,7 @@ REST_FRAMEWORK = {
 }
 ```
 
-## 3.2 urls.py
+## 2.2 urls.py
 Add url to obtain HMAC key and secret 
 ```python
 ...
@@ -64,35 +62,35 @@ urlpatterns = [
     ...
 ]
 ```
-## 3.3 Run migrations 
+## 2.3 Run migrations 
 
 ```python
 python manage.py migrate django_hmac_authentication
 ```
-# 4. Usage
+# 3. Usage
 
-## 4.1 Obtain HMAC key and secret 
+## 3.1 Obtain HMAC key and secret 
 
-### 4.1.1 Using management command
+### 3.1.1 Using management command
 Use management command to create a HMAC API key with secret for a user
 ```python
 python manage.py create_hmac_for_user bob
 {"api_key": "f4c3801c-a277-4fcb-92bb-44cb814026f6", "api_secret": "vEOQRdvaK4jyeLKGNP9oqpYTUvt/GZWbGG6iNmnDh8c=", "message": "These credentials will be lost forever if not stored now"}
 ```
 
-### 4.1.2 Using curl
+### 3.1.2 Using curl
 ```python
 # Use the url from configuration
 curl -X POST -H "Content-Type: application/json" -d '{"username":"bob", "password":"bobspassword"}' http://127.0.0.1:8000/obtain-hmac-api-key/ 
 {"api_key":"7ebc25d7-d237-4f90-b4ad-98f0c228fc1e","api_secret":"EDQppq0B3rIxvaA7PyPUHPF6kiXTnnbvnMiZDzYFSRA=","message":"These credentials will be lost forever if not stored now"}
 ```
 
-# 5. Sign requests client-side
+# 4. Sign requests client-side
 
-## 5.1 Python client
+## 4.1 Python client
 See `example_django_project/example_python_client.py`
 
-# 6. Signature
+# 5. Signature
 
 Signature is calculated on hash( request body json ) + utc 8601
 
@@ -101,7 +99,7 @@ Fields
 * Hash of request body. Hash function is one of supported methods in Authorization header
 * UTC time now in ISO 8601 format. Example `2023-05-07T14:15:37.862560+00:00`
 
-# 7. Authorization header
+# 6. Authorization header
 * method: One of `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256`
 * api_key: Key used to identify the hmac secret used to generate signature
 * signature: base64 signature
@@ -113,8 +111,11 @@ Example
 ```python
 'HMAC-SHA512 aa733037-e4c0-4f75-a864-df6c1966481b;6k3XaUREI6dDw6thyQWASJjzjsx1M7GOZAglguv0OElpRue1+gb7CK2n3JpzJGz9VcREw2y3rIW5zoZYEUY+0w==;2023-05-07T14:15:37.862560+00:00'
 ```
-# 8. License
+# 7. License
 Apache2 License
+
+# 8. Github
+https://github.com/harisankar-krishna-swamy/django_hmac_authentication
 
 # 9. See also
 https://www.okta.com/au/identity-101/hmac/
