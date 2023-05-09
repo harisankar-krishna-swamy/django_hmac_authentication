@@ -16,7 +16,7 @@ user_model = settings.AUTH_USER_MODEL
 max_hmacs_per_user = getattr(settings, 'MAX_HMACS_PER_USER', 10)
 
 
-def aes_encrypt_hmac_secret() -> tuple:
+def aes_encrypted_hmac_secret() -> tuple:
     salt = os.urandom(24)
     iv = salt[-16:]
     enc_key = pbkdf2_hmac(hash_func, settings.SECRET_KEY.encode(encoding), salt, 1000)
@@ -35,7 +35,7 @@ def create_shared_secret_for_user(user: user_model):
     n_user_hmacs = ApiHMACKey.objects.filter(user=user).count()
     if n_user_hmacs >= max_hmacs_per_user:
         raise ValidationError('Maximum API secrets limit reached for user')
-    hmac_secret, encrypted, enc_key, salt = aes_encrypt_hmac_secret()
+    hmac_secret, encrypted, enc_key, salt = aes_encrypted_hmac_secret()
     hmac_key = ApiHMACKey(
         user=user,
         secret=base64.b64encode(encrypted).decode('utf-8'),

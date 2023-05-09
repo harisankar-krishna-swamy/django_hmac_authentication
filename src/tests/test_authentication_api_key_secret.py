@@ -1,22 +1,41 @@
 import base64
 import datetime
-import json
 from datetime import timedelta
+from http import HTTPStatus
 
 from ddt import data, ddt, unpack
-from django.test import TestCase
 from freezegun import freeze_time
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.test import APIRequestFactory
+from rest_framework.response import Response
+from rest_framework.test import APIRequestFactory, APITestCase
+from rest_framework.views import APIView
 
 from django_hmac_authentication.authentication import HMACAuthentication
-from django_hmac_authentication.client_utils import hash_content, message_signature
+from django_hmac_authentication.client_utils import prepare_string_to_sign, sign_string
 from django_hmac_authentication.server_utils import aes_decrypt_hmac_secret
 from tests.factories import ApiHMACKeyFactory, ApiHMACKeyUserFactory
 
 
+class TestView(APIView):
+    authentication_classes = (HMACAuthentication,)
+
+    def get(self, request):
+        return Response(data={'method': 'GET'})
+
+    def post(self, request):
+        return Response(data={'method': 'POST'})
+
+    def patch(self, request):
+        return Response(data={'method': 'PATCH'})
+
+    def put(self, request):
+        return Response(data={'method': 'PUT'})
+
+    def delete(self, request):
+        return Response(data={'method': 'DELETE'})
+
+
 @ddt
-class TestHMACAuthentication(TestCase):
+class TestHMACAuthentication(APITestCase):
     def setUp(self) -> None:
         self.user = ApiHMACKeyUserFactory()
         self.hmac_key = ApiHMACKeyFactory(user=self.user)
@@ -24,15 +43,15 @@ class TestHMACAuthentication(TestCase):
         self.enc_salt = base64.b64decode(self.hmac_key.salt.encode('utf-8'))
         self.auth = HMACAuthentication()
         self.auth_header = 'HTTP_AUTHORIZATION'
+        self.view = TestView.as_view()
 
     def _request_auth_header_fields(self, req_data, digest):
-        body = '' if not req_data else json.dumps(req_data, separators=(',', ':'))
-        hash_body = hash_content(digest, body.encode('utf-8'))
+        secret = aes_decrypt_hmac_secret(self.enc_secret, self.enc_salt)
         utc_8601 = (
             datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
         )
-        secret = aes_decrypt_hmac_secret(self.enc_secret, self.enc_salt)
-        signature = message_signature(f'{hash_body};{utc_8601}', secret, digest)
+        string_to_sign = prepare_string_to_sign(req_data, utc_8601, digest)
+        signature = sign_string(string_to_sign, secret, digest)
         return signature, utc_8601
 
     test_data__hmac_http_methods = (
@@ -86,7 +105,7 @@ class TestHMACAuthentication(TestCase):
         self, digest='HMAC-SHA512', http_method='POST'
     ):
         factory = APIRequestFactory()
-        req_data = ''
+        req_data = None
         if http_method in {'PUT', 'POST', 'PATCH'}:
             req_data = {'a': 1, 'b': 2}
 
@@ -94,36 +113,24 @@ class TestHMACAuthentication(TestCase):
 
         headers = {
             f'{self.auth_header}': f'{digest} {self.hmac_key.id};{signature};{utc_8601}',
-            'Content-Type': 'application/json',
         }
         if http_method == 'GET':
-            request = factory.get('api/commons/languages/', data=None, **headers)
+            request = factory.get('/', data=None, **headers)
 
         if http_method == 'PUT':
-            request = factory.put(
-                'api/commons/languages/', data=req_data, format='json', **headers
-            )
+            request = factory.put('/', data=req_data, format='json', **headers)
         if http_method == 'POST':
-            request = factory.post(
-                'api/commons/languages/', data=req_data, format='json', **headers
-            )
+            request = factory.post('/', data=req_data, format='json', **headers)
         if http_method == 'PATCH':
-            request = factory.patch(
-                'api/commons/languages/', data=req_data, format='json', **headers
-            )
+            request = factory.patch('/', data=req_data, format='json', **headers)
         if http_method == 'DELETE':
-            request = factory.delete('api/commons/languages/', data=None, **headers)
+            request = factory.delete('/', data=None, **headers)
 
-        user, auth = HMACAuthentication().authenticate(request)
+        response = self.view(request)
         self.assertEqual(
-            user,
-            self.hmac_key.user,
-            f'User did not match expected after authentication with digest {digest} http_method {http_method}',
-        )
-        self.assertEqual(
-            auth,
-            None,
-            'auth entry did not match expected after authentication',
+            response.status_code,
+            HTTPStatus.OK,
+            f'Authentication failed with digest {digest} http_method {http_method}',
         )
 
     test_data__authorization_header_parsing__invalid = (
@@ -156,12 +163,16 @@ class TestHMACAuthentication(TestCase):
         req_data = ''
         signature, utc_8601 = self._request_auth_header_fields(req_data, 'HMAC-SHA512')
         headers = {
-            f'{self.auth_header}': f'hmac-sha512 {self.hmac_key.id};{signature};{utc_8601}',
+            f'{self.auth_header}': f'HMAC-SHA512 {self.hmac_key.id};{signature};{utc_8601}',
             'Content-Type': 'application/json',
         }
-        request = factory.get('api/commons/languages/', data=None, **headers)
-        with self.assertRaises(AuthenticationFailed):
-            _ = HMACAuthentication().authenticate(request)
+        request = factory.get('/', data=None, **headers)
+        response = self.view(request)
+        self.assertEqual(
+            response.status_code,
+            HTTPStatus.FORBIDDEN,
+            'Revoked API key must fail authentication',
+        )
 
     def test_hmac_authentication__inactive_user(self):
         self.user.is_active = False
@@ -174,9 +185,13 @@ class TestHMACAuthentication(TestCase):
             f'{self.auth_header}': f'HMAC-SHA512 {self.hmac_key.id};{signature};{utc_8601}',
             'Content-Type': 'application/json',
         }
-        request = factory.get('api/commons/languages/', data=None, **headers)
-        with self.assertRaises(AuthenticationFailed):
-            _ = HMACAuthentication().authenticate(request)
+        request = factory.get('/', data=None, **headers)
+        response = self.view(request)
+        self.assertEqual(
+            response.status_code,
+            HTTPStatus.FORBIDDEN,
+            'Inactive user must fail authentication',
+        )
 
     def test_hmac_authentication__timeout(self):
         factory = APIRequestFactory()
@@ -192,5 +207,9 @@ class TestHMACAuthentication(TestCase):
             'Content-Type': 'application/json',
         }
         request = factory.get('api/commons/languages/', data=None, **headers)
-        with self.assertRaises(AuthenticationFailed):
-            _ = HMACAuthentication().authenticate(request)
+        response = self.view(request)
+        self.assertEqual(
+            response.status_code,
+            HTTPStatus.FORBIDDEN,
+            'Timed out request must fail authentication',
+        )

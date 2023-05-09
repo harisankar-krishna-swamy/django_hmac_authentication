@@ -23,11 +23,11 @@ class Command(BaseCommand):
         username = options['username']
         try:
             user = user_model.objects.get(username=username)
-            api_key, secret = create_shared_secret_for_user(user)
-            token_resp = ApiHMACKeyResponseSerializer(
-                {'api_key': api_key, 'api_secret': secret}
+            api_key, api_secret = create_shared_secret_for_user(user)
+            resp = ApiHMACKeyResponseSerializer(
+                {'api_key': api_key, 'api_secret': api_secret}
             ).data
-            self.stdout.write(self.style.SUCCESS(json.dumps(token_resp)))
+            self.stdout.write(self.style.SUCCESS(json.dumps(resp)))
         except ValidationError as ve:
             self.stdout.write(self.style.ERROR(f'{ve}'))
         except ObjectDoesNotExist:

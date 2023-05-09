@@ -1,10 +1,7 @@
 import base64
-import datetime
 import hashlib
 import hmac
 import json
-
-from rest_framework.exceptions import ValidationError
 
 encoding = 'utf-8'
 
@@ -18,38 +15,41 @@ digests_map = {
 
 def hash_content(digest: str, content: bytes):
     """
-    Compute hash of content using hash function of digest
+    Compute hash on content using function specified by digest
 
     @param digest: HMAC method. One of 'HMAC-SHA512', 'HMAC-SHA384', 'HMAC-SHA256'
     @param content: bytes to hash
 
     @return: base64 of hash
     """
+    if not content:
+        return None
+
     if digest not in digests_map.keys():
-        raise ValidationError(f'Unsupported HMAC function {digest}')
+        raise ValueError(f'Unsupported HMAC function {digest}')
 
     func = digests_map[digest]
     hasher = func()
     hasher.update(content)
     hashed_bytes = hasher.digest()
     base64_encoded_bytes = base64.b64encode(hashed_bytes)
-    content_hash = base64_encoded_bytes.decode('utf-8')
+    content_hash = base64_encoded_bytes.decode(encoding)
     return content_hash
 
 
-def message_signature(message: str, secret: bytes, digest):
+def sign_string(string_to_sign: str, secret: bytes, digest):
     """
-    Sign message with hmac secret using digest hash function
+    Sign a string with hmac secret using digest's hash function
 
-    @param message: string to sign
-    @param secret: Shared hmac secret key to sign with
+    @param string_to_sign: string to sign
+    @param secret: shared secret key to sign with
     @param digest: HMAC method. One of 'HMAC-SHA512', 'HMAC-SHA384', 'HMAC-SHA256'
 
     @return: base64 string of signature
     """
     if digest not in digests_map.keys():
-        raise ValidationError(f'Unsupported HMAC function {digest}')
-    encoded_string_to_sign = message.encode(encoding)
+        raise ValueError(f'Unsupported HMAC function {digest}')
+    encoded_string_to_sign = string_to_sign.encode(encoding)
     hashed_bytes = hmac.digest(
         secret, encoded_string_to_sign, digest=digests_map[digest]
     )
@@ -58,13 +58,15 @@ def message_signature(message: str, secret: bytes, digest):
     return signature
 
 
-def compose_authorization_header(digest, api_key, signature, utc_8601):
+def compose_authorization_header(
+    digest: str, api_key: str, signature: str, utc_8601: str
+):
     """
     Put together Authorization header string
 
     @param digest: HMAC method. One of 'HMAC-SHA512', 'HMAC-SHA384', 'HMAC-SHA256'
     @param api_key: User's api_key
-    @param signature: base64 signature for request
+    @param signature: base64 signature
     @param utc_8601: The utc 8601 string that was also signed
 
     @return: authorization header string
@@ -72,20 +74,20 @@ def compose_authorization_header(digest, api_key, signature, utc_8601):
     return f'{digest} {api_key};{signature};{utc_8601}'
 
 
-def hmac_sign(req_data: dict, api_secret: bytes, digest: str):
+def prepare_string_to_sign(data: dict, utc_8601: str, digest: str):
     """
-    Signature request data (json) and utc now time in ISO8601 format string
-
-    @param req_data: data dict that goes into request body as json
-    @param api_secret: api_secret for user
+    Prepare a string to sign from data and utc_8601.
+    string to sign = hash( json(data) ) + ';' + utc_8601
+    @param data: data dict
+    @param utc_8601: utc 8601 string to use in signature. use utc now if not provided
     @param digest: HMAC method. One of 'HMAC-SHA512', 'HMAC-SHA384', 'HMAC-SHA256'
 
-    @return: signature string and ISO8601 time string for authorization header
+    @return: string to sign
     """
-    body = '' if not req_data else json.dumps(req_data)
-    hash_body = hash_content(digest, body.encode('utf-8'))
-    utc_8601 = (
-        datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
-    )
-    signature = message_signature(f'{hash_body};{utc_8601}', api_secret, digest)
-    return signature, utc_8601
+    body = None if not data else json.dumps(data).encode(encoding)
+    body_hash = hash_content(digest, body)
+    string_to_sign = f';{utc_8601}'
+
+    if body_hash:
+        string_to_sign = f'{body_hash}' + string_to_sign
+    return string_to_sign
