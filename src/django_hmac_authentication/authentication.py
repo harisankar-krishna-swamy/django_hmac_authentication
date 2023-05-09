@@ -1,17 +1,12 @@
 import base64
 import datetime
-import json
 from datetime import timezone
 
 from django.conf import settings
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
 
-from django_hmac_authentication.client_utils import (
-    hash_content,
-    prepare_string_to_sign,
-    sign_string,
-)
+from django_hmac_authentication.client_utils import prepare_string_to_sign, sign_string
 from django_hmac_authentication.models import ApiHMACKey
 from django_hmac_authentication.server_utils import aes_decrypt_hmac_secret
 

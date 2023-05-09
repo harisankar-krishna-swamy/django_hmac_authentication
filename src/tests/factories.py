@@ -8,11 +8,11 @@ from django.db.models.signals import post_save
 from factory.django import DjangoModelFactory
 
 from django_hmac_authentication.models import ApiHMACKey
-from django_hmac_authentication.server_utils import aes_encrypt_hmac_secret
+from django_hmac_authentication.server_utils import aes_encrypted_hmac_secret
 
 user_model = get_user_model()
 test_password = secrets.token_hex()
-test_hmac_secret, test_encrypted, test_enc_key, test_salt = aes_encrypt_hmac_secret()
+test_hmac_secret, test_encrypted, test_enc_key, test_salt = aes_encrypted_hmac_secret()
 
 
 @factory.django.mute_signals(post_save)

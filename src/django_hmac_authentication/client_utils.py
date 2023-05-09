@@ -1,5 +1,4 @@
 import base64
-import datetime
 import hashlib
 import hmac
 import json
@@ -16,7 +15,7 @@ digests_map = {
 
 def hash_content(digest: str, content: bytes):
     """
-    Compute hash of content using hash function of digest
+    Compute hash on content using function specified by digest
 
     @param digest: HMAC method. One of 'HMAC-SHA512', 'HMAC-SHA384', 'HMAC-SHA256'
     @param content: bytes to hash
@@ -34,16 +33,16 @@ def hash_content(digest: str, content: bytes):
     hasher.update(content)
     hashed_bytes = hasher.digest()
     base64_encoded_bytes = base64.b64encode(hashed_bytes)
-    content_hash = base64_encoded_bytes.decode('utf-8')
+    content_hash = base64_encoded_bytes.decode(encoding)
     return content_hash
 
 
 def sign_string(string_to_sign: str, secret: bytes, digest):
     """
-    Sign a string with hmac secret using digest hash function
+    Sign a string with hmac secret using digest's hash function
 
     @param string_to_sign: string to sign
-    @param secret: Shared hmac secret key to sign with
+    @param secret: shared secret key to sign with
     @param digest: HMAC method. One of 'HMAC-SHA512', 'HMAC-SHA384', 'HMAC-SHA256'
 
     @return: base64 string of signature
@@ -59,13 +58,15 @@ def sign_string(string_to_sign: str, secret: bytes, digest):
     return signature
 
 
-def compose_authorization_header(digest, api_key, signature, utc_8601):
+def compose_authorization_header(
+    digest: str, api_key: str, signature: str, utc_8601: str
+):
     """
     Put together Authorization header string
 
     @param digest: HMAC method. One of 'HMAC-SHA512', 'HMAC-SHA384', 'HMAC-SHA256'
     @param api_key: User's api_key
-    @param signature: base64 signature for request
+    @param signature: base64 signature
     @param utc_8601: The utc 8601 string that was also signed
 
     @return: authorization header string
@@ -81,10 +82,9 @@ def prepare_string_to_sign(data: dict, utc_8601: str, digest: str):
     @param utc_8601: utc 8601 string to use in signature. use utc now if not provided
     @param digest: HMAC method. One of 'HMAC-SHA512', 'HMAC-SHA384', 'HMAC-SHA256'
 
-    @return: signature string and ISO8601 time string for authorization header
+    @return: string to sign
     """
-
-    body = None if not data else json.dumps(data).encode('utf-8')
+    body = None if not data else json.dumps(data).encode(encoding)
     body_hash = hash_content(digest, body)
     string_to_sign = f';{utc_8601}'
 

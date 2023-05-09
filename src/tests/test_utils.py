@@ -7,14 +7,14 @@ from django_hmac_authentication.aes import aes_crypt
 from django_hmac_authentication.client_utils import hash_content, sign_string
 from django_hmac_authentication.server_utils import (
     aes_decrypt_hmac_secret,
-    aes_encrypt_hmac_secret,
+    aes_encrypted_hmac_secret,
 )
 
 
 @ddt
 class TestUtils(TestCase):
     def test_match_hmac_secret(self):
-        hmac_secret, encrypted, enc_key, salt = aes_encrypt_hmac_secret()
+        hmac_secret, encrypted, enc_key, salt = aes_encrypted_hmac_secret()
         decrypted = aes_decrypt_hmac_secret(encrypted, salt)
         self.assertTrue(
             hmac_secret == decrypted, 'Decrypted secret did not match original'

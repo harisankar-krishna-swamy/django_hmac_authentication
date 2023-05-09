@@ -88,9 +88,13 @@ curl -X POST -H "Content-Type: application/json" -d '{"username":"bob", "passwor
 ## 5.1 Python client
 See `example_django_project/example_python_client.py`
 
-# 6. Signature fields
+# 6. Signature
 
-* Hash of request body. Hash function depends on one of the supported methods in Authorization header
+Signature is calculated on hash( request body json ) + utc 8601
+
+Fields
+
+* Hash of request body. Hash function is one of supported methods in Authorization header
 * UTC time now in ISO 8601 format. Example `2023-05-07T14:15:37.862560+00:00`
 
 # 7. Authorization header
@@ -114,6 +118,3 @@ https://www.okta.com/au/identity-101/hmac/
 https://docs.python.org/3/library/hashlib.html
 
 https://learn.microsoft.com/en-us/azure/communication-services/tutorials/hmac-header-tutorial?pivots=programming-language-python
-
-
-
