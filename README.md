@@ -1,13 +1,11 @@
 # django_hmac_authentication
 Django hmac authentication with shared secret
 
-* Django model with api key and hmac secret
-* HMAC shared secret for user is protected with AES 
-* AES key and iv derived from Django `SECRET_KEY` and random salt per user
+* Django model with HMAC shared encrypted secret
 * Authentication class `HMACAuthentication` 
 * Reject requests earlier than configured timeout
 * Supports `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256`
-* HMAC secret can be shared out of band or obtained with a configured url
+* HMAC secret can be created with management command or obtained with a configured url
 
 # 1. Install
 `pip install django_hmac_authentication`
