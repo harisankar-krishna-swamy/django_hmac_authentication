@@ -6,6 +6,7 @@ Django hmac authentication with shared secret
 * Reject requests earlier than configured timeout
 * Supports `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256`
 * HMAC secret can be created with management command or obtained with a configured url
+* Supports Javascript and Python clients
 
 # 1. Install
 `pip install django_hmac_authentication`
@@ -96,11 +97,18 @@ See `example_django_project/example_python_client.py`
 
 # 5. Signature
 
+# 5.1 How is it calculated
+
 Signature is calculated on hash( request body json ) + utc 8601
 
-Fields
+Steps:
 
-* Hash of request body. Hash function is one of supported methods in Authorization header
+1. request body (data) -> json string in utf-8 -> hash -> **base64 of body hash**
+2. **utc 8601 string**
+3. string to sign = **base64 of body hash** + ";" + **utc 8601 string**
+4. signature = hash (string to sign) -> base64
+
+* Hash function is one of supported methods in Authorization header
 * UTC time now in ISO 8601 format. Example `2023-05-07T14:15:37.862560+00:00`
 
 # 6. Authorization header
@@ -109,7 +117,7 @@ Fields
 * signature: base64 signature
 * request_utc: time in ISO 8601 set in signed string
 
-`Syntax`: method api_key;signature;request_utc
+`Syntax`: METHOD api_key;signature;request_utc_8601
 
 Example
 ```python
