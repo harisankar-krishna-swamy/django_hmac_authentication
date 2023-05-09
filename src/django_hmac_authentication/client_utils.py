@@ -4,8 +4,6 @@ import hashlib
 import hmac
 import json
 
-from rest_framework.exceptions import ValidationError
-
 encoding = 'utf-8'
 
 
@@ -29,7 +27,7 @@ def hash_content(digest: str, content: bytes):
         return None
 
     if digest not in digests_map.keys():
-        raise ValidationError(f'Unsupported HMAC function {digest}')
+        raise ValueError(f'Unsupported HMAC function {digest}')
 
     func = digests_map[digest]
     hasher = func()
@@ -40,19 +38,19 @@ def hash_content(digest: str, content: bytes):
     return content_hash
 
 
-def message_signature(message: str, secret: bytes, digest):
+def sign_string(string_to_sign: str, secret: bytes, digest):
     """
-    Sign message with hmac secret using digest hash function
+    Sign a string with hmac secret using digest hash function
 
-    @param message: string to sign
+    @param string_to_sign: string to sign
     @param secret: Shared hmac secret key to sign with
     @param digest: HMAC method. One of 'HMAC-SHA512', 'HMAC-SHA384', 'HMAC-SHA256'
 
     @return: base64 string of signature
     """
     if digest not in digests_map.keys():
-        raise ValidationError(f'Unsupported HMAC function {digest}')
-    encoded_string_to_sign = message.encode(encoding)
+        raise ValueError(f'Unsupported HMAC function {digest}')
+    encoded_string_to_sign = string_to_sign.encode(encoding)
     hashed_bytes = hmac.digest(
         secret, encoded_string_to_sign, digest=digests_map[digest]
     )
@@ -75,23 +73,21 @@ def compose_authorization_header(digest, api_key, signature, utc_8601):
     return f'{digest} {api_key};{signature};{utc_8601}'
 
 
-def hmac_sign(req_data: dict, api_secret: bytes, digest: str):
+def prepare_string_to_sign(data: dict, utc_8601: str, digest: str):
     """
-    Signature request data (json) and utc now time in ISO8601 format string
-
-    @param req_data: data dict that goes into request body as json
-    @param api_secret: api_secret for user
+    Prepare a string to sign from data and utc_8601.
+    string to sign = hash( json(data) ) + ';' + utc_8601
+    @param data: data dict
+    @param utc_8601: utc 8601 string to use in signature. use utc now if not provided
     @param digest: HMAC method. One of 'HMAC-SHA512', 'HMAC-SHA384', 'HMAC-SHA256'
 
     @return: signature string and ISO8601 time string for authorization header
     """
-    utc_8601 = (
-        datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
-    )
-    string_to_sign = f';{utc_8601}'
-    body = None if not req_data else json.dumps(req_data).encode('utf-8')
+
+    body = None if not data else json.dumps(data).encode('utf-8')
     body_hash = hash_content(digest, body)
+    string_to_sign = f';{utc_8601}'
+
     if body_hash:
         string_to_sign = f'{body_hash}' + string_to_sign
-    signature = message_signature(string_to_sign, api_secret, digest)
-    return signature, utc_8601
+    return string_to_sign

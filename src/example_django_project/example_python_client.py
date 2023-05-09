@@ -1,11 +1,13 @@
 import base64
+import datetime
 import json
 
 import requests
 
 from django_hmac_authentication.client_utils import (
     compose_authorization_header,
-    hmac_sign,
+    prepare_string_to_sign,
+    sign_string,
 )
 
 json_response = '''
@@ -15,7 +17,9 @@ json_response = '''
 '''
 
 if __name__ == '__main__':
-
+    utc_8601 = (
+        datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
+    )
     response_data = json.loads(json_response)
     api_key = response_data['api_key']
     api_secret = base64.b64decode(response_data['api_secret'])
@@ -23,9 +27,10 @@ if __name__ == '__main__':
 
     digest = 'HMAC-SHA512'
     # GET
-    signature, utc8601 = hmac_sign(None, api_secret, digest)
+    string_to_sign = prepare_string_to_sign(None, utc_8601, digest)
+    signature = sign_string(string_to_sign, api_secret, digest)
     authorization_header = compose_authorization_header(
-        digest, api_key, signature, utc8601
+        digest, api_key, signature, utc_8601
     )
     headers = {'Authorization': authorization_header}
     r = requests.get(url, headers=headers)
@@ -33,9 +38,10 @@ if __name__ == '__main__':
 
     # POST
     req_data = {'a': 1, 'b': 2}
-    signature, utc8601 = hmac_sign(req_data, api_secret, digest)
+    string_to_sign = prepare_string_to_sign(req_data, utc_8601, digest)
+    signature = sign_string(string_to_sign, api_secret, digest)
     authorization_header = compose_authorization_header(
-        digest, api_key, signature, utc8601
+        digest, api_key, signature, utc_8601
     )
     headers = {
         'Authorization': authorization_header,

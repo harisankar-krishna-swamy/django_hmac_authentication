@@ -1,18 +1,16 @@
 import base64
 import datetime
-import json
 from datetime import timedelta
 from http import HTTPStatus
 
 from ddt import data, ddt, unpack
 from freezegun import freeze_time
-from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 from rest_framework.test import APIRequestFactory, APITestCase
 from rest_framework.views import APIView
 
 from django_hmac_authentication.authentication import HMACAuthentication
-from django_hmac_authentication.client_utils import hmac_sign
+from django_hmac_authentication.client_utils import prepare_string_to_sign, sign_string
 from django_hmac_authentication.server_utils import aes_decrypt_hmac_secret
 from tests.factories import ApiHMACKeyFactory, ApiHMACKeyUserFactory
 
@@ -49,7 +47,12 @@ class TestHMACAuthentication(APITestCase):
 
     def _request_auth_header_fields(self, req_data, digest):
         secret = aes_decrypt_hmac_secret(self.enc_secret, self.enc_salt)
-        return hmac_sign(req_data, secret, digest)
+        utc_8601 = (
+            datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
+        )
+        string_to_sign = prepare_string_to_sign(req_data, utc_8601, digest)
+        signature = sign_string(string_to_sign, secret, digest)
+        return signature, utc_8601
 
     test_data__hmac_http_methods = (
         # hmac-sha512

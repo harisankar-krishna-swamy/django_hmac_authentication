@@ -4,7 +4,7 @@ from ddt import data, ddt, unpack
 from django.test import TestCase
 
 from django_hmac_authentication.aes import aes_crypt
-from django_hmac_authentication.client_utils import hash_content, message_signature
+from django_hmac_authentication.client_utils import hash_content, sign_string
 from django_hmac_authentication.server_utils import (
     aes_decrypt_hmac_secret,
     aes_encrypt_hmac_secret,
@@ -69,14 +69,14 @@ class TestUtils(TestCase):
         ),
     )
     @unpack
-    def test_message_signature(
+    def test_sign_string(
         self,
         digest='HMAC-SHA512',
         expected_b64signature='ZaIJF7XWibQHwbbgx6qd5AIh78SB/+WPJIXFHYIqzs4=',
     ):
         secret = 'test_secret'.encode('utf-8')
         message = 'test_message'
-        calculated_b64signature = message_signature(message, secret, digest)
+        calculated_b64signature = sign_string(message, secret, digest)
         self.assertTrue(
             calculated_b64signature == expected_b64signature,
             f'Computed signature did not match expected for {digest}',

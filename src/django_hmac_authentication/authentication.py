@@ -7,11 +7,15 @@ from django.conf import settings
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
 
-from django_hmac_authentication.client_utils import hash_content, message_signature
+from django_hmac_authentication.client_utils import (
+    hash_content,
+    prepare_string_to_sign,
+    sign_string,
+)
 from django_hmac_authentication.models import ApiHMACKey
 from django_hmac_authentication.server_utils import aes_decrypt_hmac_secret
 
-auth_timeout = getattr(settings, 'HMAC_AUTH_REQUEST_TIMEOUT', 5)
+auth_req_timeout = getattr(settings, 'HMAC_AUTH_REQUEST_TIMEOUT', 5)
 
 
 class HMACAuthentication(authentication.BaseAuthentication):
@@ -22,11 +26,7 @@ class HMACAuthentication(authentication.BaseAuthentication):
             return None, None, None
         try:
             auth_method, rest = content.split()
-            if (
-                not auth_method
-                or auth_method not in self.authentication_methods
-                or not rest
-            ):
+            if not auth_method or not rest:
                 return None, None
 
             api_key, signature, dt = rest.split(';')
@@ -38,16 +38,13 @@ class HMACAuthentication(authentication.BaseAuthentication):
             return None, None
 
     def compute_request_signature(self, request, auth_method, date_in, hmac_key):
-        string_to_sign = f';{date_in}'
-        data = getattr(request, 'data', None)
-        body = json.dumps(data).encode('utf-8') if data else None
-        body_hash = hash_content(auth_method, body)
-        if body_hash:
-            string_to_sign = f'{body_hash}' + string_to_sign
         enc_secret = base64.b64decode(hmac_key.secret.encode('utf-8'))
         enc_salt = base64.b64decode(hmac_key.salt.encode('utf-8'))
         secret = aes_decrypt_hmac_secret(enc_secret, enc_salt)
-        computed_signature = message_signature(string_to_sign, secret, auth_method)
+
+        data = getattr(request, 'data', None)
+        string_to_sign = prepare_string_to_sign(data, date_in, auth_method)
+        computed_signature = sign_string(string_to_sign, secret, auth_method)
         return computed_signature
 
     def authenticate(self, request):
@@ -59,9 +56,12 @@ class HMACAuthentication(authentication.BaseAuthentication):
 
         auth_method, key, signature, date_in = self.parse_authorization_header(auth_hdr)
 
+        if auth_method not in self.authentication_methods:
+            raise AuthenticationFailed(f'Unsupported HMAC method {auth_method}')
+
         utcnow = datetime.datetime.now(timezone.utc)
         delta = utcnow - datetime.datetime.fromisoformat(date_in)
-        if delta.total_seconds() > auth_timeout:
+        if delta.total_seconds() > auth_req_timeout:
             raise AuthenticationFailed('Request timed out')
 
         hmac_key = ApiHMACKey.objects.filter(id=key).first()
