@@ -13,6 +13,9 @@ from django_hmac_authentication.authentication import HMACAuthentication
 from django_hmac_authentication.client_utils import prepare_string_to_sign, sign_string
 from django_hmac_authentication.server_utils import aes_decrypt_hmac_secret
 from tests.factories import ApiHMACKeyFactory, ApiHMACKeyUserFactory
+from tests.test_hmac_authorization_header_parsing import (
+    test_data__authorization_header_parsing_invalid,
+)
 
 
 class TestView(APIView):
@@ -133,28 +136,6 @@ class TestHMACAuthentication(APITestCase):
             f'Authentication failed with digest {digest} http_method {http_method}',
         )
 
-    test_data__authorization_header_parsing__invalid = (
-        # invalid values for authorization header content
-        (None,),
-        ('',),
-        ('one_part',),
-        ('two parts',),
-        ('with three parts',),
-        ('with such four parts',),
-    )
-
-    @data(*test_data__authorization_header_parsing__invalid)
-    @unpack
-    def test_hmac_authentication_authorization_header_parsing__invalid(
-        self, header=None, expected_token=None
-    ):
-        header_parts = self.auth.parse_authorization_header(header)
-        for part in header_parts:
-            self.assertIsNone(
-                part,
-                f'Header parsing failed. Header part {part} when expecting None',
-            )
-
     def test_hmac_authentication__revoked(self):
         self.hmac_key.revoked = True
         self.hmac_key.save()
@@ -212,4 +193,22 @@ class TestHMACAuthentication(APITestCase):
             response.status_code,
             HTTPStatus.FORBIDDEN,
             'Timed out request must fail authentication',
+        )
+
+    @data(*test_data__authorization_header_parsing_invalid)
+    @unpack
+    def test_hmac_authentication__fail_malformed_header(
+        self, header=None, valid_header=False
+    ):
+        factory = APIRequestFactory()
+        headers = {
+            f'{self.auth_header}': header,
+            'Content-Type': 'application/json',
+        }
+        request = factory.get('/', data=None, **headers)
+        response = self.view(request)
+        self.assertEqual(
+            response.status_code,
+            HTTPStatus.FORBIDDEN,
+            'Authentication must fail on malformed header',
         )

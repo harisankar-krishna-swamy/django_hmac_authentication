@@ -18,19 +18,19 @@ class HMACAuthentication(authentication.BaseAuthentication):
 
     def parse_authorization_header(self, content):
         if not content:
-            return None, None, None
+            return None, None, None, None
         try:
             auth_method, rest = content.split()
             if not auth_method or not rest:
-                return None, None
+                return None, None, None, None
 
             api_key, signature, dt = rest.split(';')
             if not api_key or not signature or not dt:
-                return None, None
+                return None, None, None, None
 
             return auth_method, api_key, signature, dt
         except (AttributeError, ValueError):
-            return None, None
+            return None, None, None, None
 
     def compute_request_signature(self, request, auth_method, date_in, hmac_key):
         enc_secret = base64.b64decode(hmac_key.secret.encode('utf-8'))
@@ -51,11 +51,21 @@ class HMACAuthentication(authentication.BaseAuthentication):
 
         auth_method, key, signature, date_in = self.parse_authorization_header(auth_hdr)
 
+        if not auth_method or not key or not signature or not date_in:
+            return None
+
+        # auth header structure is for hmac authentication
         if auth_method not in self.authentication_methods:
             raise AuthenticationFailed(f'Unsupported HMAC method {auth_method}')
 
         utcnow = datetime.datetime.now(timezone.utc)
-        delta = utcnow - datetime.datetime.fromisoformat(date_in)
+
+        try:
+            req_utc = datetime.datetime.fromisoformat(date_in)
+        except ValueError:
+            raise AuthenticationFailed('Invalid date format in Authorization header')
+
+        delta = utcnow - req_utc
         if delta.total_seconds() > auth_req_timeout:
             raise AuthenticationFailed('Request timed out')
 
