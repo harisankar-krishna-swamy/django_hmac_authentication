@@ -134,7 +134,7 @@ Example
 ```
 # 7. Protecting user's hmac secret
 ```text
-Django settings.SECRET_KEY                 salt 
+Django settings.SECRET_KEY                 salt per user
            │                               │   │
            │                               │   │
            └───────────►   pbkdf2_hmac  ◄──┘   │
