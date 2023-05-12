@@ -102,35 +102,61 @@ See `example_django_project/example_python_client.py`
 
 Signature is calculated on hash( request body json ) + utc 8601
 
-Steps:
-
-1. request body (data) -> json string in utf-8 -> hash -> **base64 of body hash**
-2. **utc 8601 string**
-3. string to sign = **base64 of body hash** + ";" + **utc 8601 string**
-4. signature = hash (string to sign) -> base64
+```text
+request data
+    │
+    ▼
+  json
+    │
+    ▼
+  hash  +   ;  +  utc 8601
+ ────────────┬─────────────
+             │
+             ▼
+         signature
+```
 
 * Hash function is one of supported methods in Authorization header
 * UTC time now in ISO 8601 format. Example `2023-05-07T14:15:37.862560+00:00`
 
 # 6. Authorization header
+
+`Syntax`: `METHOD` `api_key;signature;request_utc_8601`
+
 * method: One of `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256`
 * api_key: Key used to identify the hmac secret used to generate signature
 * signature: base64 signature
 * request_utc: time in ISO 8601 set in signed string
 
-`Syntax`: METHOD api_key;signature;request_utc_8601
-
 Example
 ```python
 'HMAC-SHA512 aa733037-e4c0-4f75-a864-df6c1966481b;6k3XaUREI6dDw6thyQWASJjzjsx1M7GOZAglguv0OElpRue1+gb7CK2n3JpzJGz9VcREw2y3rIW5zoZYEUY+0w==;2023-05-07T14:15:37.862560+00:00'
 ```
-# 7. License
+# 7. Protecting user's hmac secret
+```text
+Django settings.SECRET_KEY                 salt 
+           │                               │   │
+           │                               │   │
+           └───────────►   pbkdf2_hmac  ◄──┘   │
+                                │              │
+                                │              │
+                                ▼              │
+                          aes 256 bit key      │
+                                │              │
+                                │              │
+                                ▼              │
+   enc user secret  ◄────────  aes             │
+                                ▲              │
+                                │              │
+                               iv ◄────────────┘
+```
+# 8. License
 Apache2 License
 
-# 8. Github
+# 9. Github
 https://github.com/harisankar-krishna-swamy/django_hmac_authentication
 
-# 9. See also
+# 10. See also
 https://www.okta.com/au/identity-101/hmac/
 
 https://docs.python.org/3/library/hashlib.html
