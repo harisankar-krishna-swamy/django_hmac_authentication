@@ -7,6 +7,62 @@
 	},
 	"item": [
 		{
+			"name": "Obtain HMAC key",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let body = JSON.parse(responseBody);",
+							"pm.environment.set(\"api_key\", body.api_key);",
+							"pm.environment.set(\"api_secret\", body.api_secret);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"topcat\",\n    \"password\": \"123456\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "127.0.0.1:8000/obtain-hmac-api-key/",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"obtain-hmac-api-key",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "GET HMAC",
 			"event": [
 				{
@@ -244,6 +300,10 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
+					"let skip_request_name = \"Obtain HMAC key\";",
+					"if (pm.info.requestName === skip_request_name)",
+					"{ return; }",
+					"",
 					"var api_key = pm.environment.get(\"api_key\");",
 					"var secret = CryptoJS.enc.Base64.parse(pm.environment.get(\"api_secret\"));",
 					"var date = new Date().toISOString();",
@@ -272,6 +332,16 @@
 					""
 				]
 			}
+		}
+	],
+	"variable": [
+		{
+			"key": "api_key",
+			"value": ""
+		},
+		{
+			"key": "api_secret",
+			"value": ""
 		}
 	]
 }

@@ -1,3 +1,7 @@
+let skip_request_name = "Obtain HMAC key";
+if (pm.info.requestName === skip_request_name)
+{ return; }
+
 var api_key = pm.environment.get("api_key");
 var secret = CryptoJS.enc.Base64.parse(pm.environment.get("api_secret"));
 var date = new Date().toISOString();
