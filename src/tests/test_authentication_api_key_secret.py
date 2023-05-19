@@ -79,6 +79,27 @@ class TestHMACAuthentication(APITestCase):
             'HMAC-SHA512',
             'DELETE',
         ),
+        # hmac-sha384
+        (
+            'HMAC-SHA384',
+            'GET',
+        ),
+        (
+            'HMAC-SHA384',
+            'POST',
+        ),
+        (
+            'HMAC-SHA384',
+            'PATCH',
+        ),
+        (
+            'HMAC-SHA384',
+            'PUT',
+        ),
+        (
+            'HMAC-SHA384',
+            'DELETE',
+        ),
         # hmac-sha256
         (
             'HMAC-SHA256',
