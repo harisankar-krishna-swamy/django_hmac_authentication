@@ -64,6 +64,10 @@ class TestUtils(TestCase):
             'BsDXXZ895Ko1KhznDwBhRBS0+g+5X+KoZz1b3R7JUXhQ/5r0Q+pN+FfhlL88KRiL3ya2RNw6GETHbzolHcuXAw==',
         ),
         (
+            'HMAC-SHA384',
+            'd/bLM3PsSDS+/NxNqYwlqY9nNv/5OK9MJSd31uQ4cHB4DE9NIhG1cszPEgwJdu4+',
+        ),
+        (
             'HMAC-SHA256',
             'ZaIJF7XWibQHwbbgx6qd5AIh78SB/+WPJIXFHYIqzs4=',
         ),
