@@ -41,3 +41,12 @@ repos:
       - id: djlint-django
         args:
           - --reformat
+  - repo: https://github.com/myint/autoflake
+    rev: v1.4
+    hooks:
+      - id: autoflake
+        args:
+          - --in-place
+          - --remove-unused-variables
+          - --remove-all-unused-imports
+          - --ignore-init-module-imports
