@@ -7,6 +7,14 @@ from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
 
 from django_hmac_authentication.client_utils import prepare_string_to_sign, sign_string
+from django_hmac_authentication.exceptions import (
+    DateFormatException,
+    ExpiredRequestException,
+    KeyDoesNotExistException,
+    RevokedKeyException,
+    SignatureVerificationException,
+    UnsupportedHMACMethodException,
+)
 from django_hmac_authentication.models import ApiHMACKey
 from django_hmac_authentication.server_utils import aes_decrypt_hmac_secret
 
@@ -56,22 +64,25 @@ class HMACAuthentication(authentication.BaseAuthentication):
 
         # auth header structure is for hmac authentication
         if auth_method not in self.authentication_methods:
-            raise AuthenticationFailed(f'Unsupported HMAC method {auth_method}')
+            raise UnsupportedHMACMethodException(hmac_method=auth_method)
 
         utcnow = datetime.datetime.now(timezone.utc)
 
         try:
             req_utc = datetime.datetime.fromisoformat(date_in)
         except ValueError:
-            raise AuthenticationFailed('Invalid date format in Authorization header')
+            raise DateFormatException()
 
         delta = utcnow - req_utc
         if delta.total_seconds() > auth_req_timeout:
-            raise AuthenticationFailed('Request timed out')
+            raise ExpiredRequestException()
 
         hmac_key = ApiHMACKey.objects.filter(id=key).first()
-        if not hmac_key or hmac_key.revoked:
-            raise AuthenticationFailed('Invalid API Key')
+        if not hmac_key:
+            raise KeyDoesNotExistException()
+
+        if hmac_key.revoked:
+            raise RevokedKeyException()
 
         if not hmac_key.user.is_active:
             raise AuthenticationFailed('User is inactive')
@@ -80,6 +91,6 @@ class HMACAuthentication(authentication.BaseAuthentication):
             request, auth_method, date_in, hmac_key
         )
         if not computed_signature == signature:
-            raise AuthenticationFailed('Message verification failed')
+            raise SignatureVerificationException()
 
         return hmac_key.user, None
