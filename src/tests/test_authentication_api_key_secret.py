@@ -11,6 +11,14 @@ from rest_framework.views import APIView
 
 from django_hmac_authentication.authentication import HMACAuthentication
 from django_hmac_authentication.client_utils import prepare_string_to_sign, sign_string
+from django_hmac_authentication.exceptions import (
+    DateFormatException,
+    ExpiredRequestException,
+    KeyDoesNotExistException,
+    RevokedKeyException,
+    SignatureVerificationException,
+    UnsupportedHMACMethodException,
+)
 from django_hmac_authentication.server_utils import aes_decrypt_hmac_secret
 from tests.factories import ApiHMACKeyFactory, ApiHMACKeyUserFactory
 from tests.test_hmac_authorization_header_parsing import (
@@ -47,6 +55,19 @@ class TestHMACAuthentication(APITestCase):
         self.auth = HMACAuthentication()
         self.auth_header = 'HTTP_AUTHORIZATION'
         self.view = TestView.as_view()
+
+    def _assert_response_error_detail(self, resp_data, exc):
+        detail, code = resp_data.get('detail'), resp_data.get('detail').code
+        self.assertEqual(
+            detail,
+            exc.detail,
+            f'Response error detail did not match expected {exc.detail}',
+        )
+        self.assertEqual(
+            code,
+            exc.detail.code,
+            f'Response error code did not match expected {exc.detail.code}',
+        )
 
     def _request_auth_header_fields(self, req_data, digest):
         secret = aes_decrypt_hmac_secret(self.enc_secret, self.enc_salt)
@@ -175,6 +196,7 @@ class TestHMACAuthentication(APITestCase):
             HTTPStatus.FORBIDDEN,
             'Revoked API key must fail authentication',
         )
+        self._assert_response_error_detail(response.data, RevokedKeyException())
 
     def test_hmac_authentication__inactive_user(self):
         self.user.is_active = False
@@ -208,12 +230,91 @@ class TestHMACAuthentication(APITestCase):
             f'{self.auth_header}': f'HMAC-SHA512 {self.hmac_key.id};{signature};{utc_8601}',
             'Content-Type': 'application/json',
         }
-        request = factory.get('api/commons/languages/', data=None, **headers)
+        request = factory.get('/', data=None, **headers)
         response = self.view(request)
         self.assertEqual(
             response.status_code,
             HTTPStatus.FORBIDDEN,
             'Timed out request must fail authentication',
+        )
+        self._assert_response_error_detail(response.data, ExpiredRequestException())
+
+    def test_hmac_authentication__unsupported_hmac_method(self):
+        factory = APIRequestFactory()
+        req_data = ''
+        signature, utc_8601 = self._request_auth_header_fields(req_data, 'HMAC-SHA512')
+        # Unsupported hmac method
+        headers = {
+            f'{self.auth_header}': f'HMAC-SHA123 {self.hmac_key.id};{signature};{utc_8601}',
+            'Content-Type': 'application/json',
+        }
+        request = factory.get('/', data=None, **headers)
+        response = self.view(request)
+        self.assertEqual(
+            response.status_code,
+            HTTPStatus.FORBIDDEN,
+            'Unsupported hmac method must fail authentication',
+        )
+        self._assert_response_error_detail(
+            response.data, UnsupportedHMACMethodException(hmac_method='HMAC-SHA123')
+        )
+
+    def test_hmac_authentication__malformed_date_str(self):
+        factory = APIRequestFactory()
+        req_data = ''
+        signature, utc_8601 = self._request_auth_header_fields(req_data, 'HMAC-SHA512')
+        # malformed date
+        headers = {
+            f'{self.auth_header}': f'HMAC-SHA512 {self.hmac_key.id};{signature};malformed_date+0:0',
+            'Content-Type': 'application/json',
+        }
+        request = factory.get('/', data=None, **headers)
+        response = self.view(request)
+        self.assertEqual(
+            response.status_code,
+            HTTPStatus.FORBIDDEN,
+            'Malformed date must fail authentication',
+        )
+        self._assert_response_error_detail(response.data, DateFormatException())
+
+    def test_hmac_authentication__non_existing_key(self):
+        factory = APIRequestFactory()
+        req_data = ''
+        signature, utc_8601 = self._request_auth_header_fields(req_data, 'HMAC-SHA512')
+        # non existing key id
+        headers = {
+            f'{self.auth_header}': f'HMAC-SHA512 12345d23-595f-4fbc-bb32-716c183f3d0b;{signature};{utc_8601}',
+            'Content-Type': 'application/json',
+        }
+        request = factory.get('/', data=None, **headers)
+        response = self.view(request)
+        self.assertEqual(
+            response.status_code,
+            HTTPStatus.FORBIDDEN,
+            'Non existing key must fail authentication',
+        )
+        self._assert_response_error_detail(response.data, KeyDoesNotExistException())
+
+    def test_hmac_authentication__invalid_signature(self):
+        factory = APIRequestFactory()
+        req_data = ''
+        signature, utc_8601 = self._request_auth_header_fields(req_data, 'HMAC-SHA512')
+        invalid_signature = (
+            'dGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYXp5IGRvZw=='
+        )
+        headers = {
+            f'{self.auth_header}': f'HMAC-SHA512 {self.hmac_key.id};{invalid_signature};{utc_8601}',
+            'Content-Type': 'application/json',
+        }
+        request = factory.get('/', data=None, **headers)
+        response = self.view(request)
+        self.assertEqual(
+            response.status_code,
+            HTTPStatus.FORBIDDEN,
+            'Invalid signature must fail authentication',
+        )
+        self._assert_response_error_detail(
+            response.data, SignatureVerificationException()
         )
 
     @data(*test_data__authorization_header_parsing_invalid)
