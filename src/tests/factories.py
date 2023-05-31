@@ -47,3 +47,11 @@ class ApiHMACKeyFactory(DjangoModelFactory):
     salt = base64.b64encode(test_salt).decode('utf-8')
     secret = base64.b64encode(test_encrypted).decode('utf-8')
     revoked = False
+    failed_attempts = 0
+
+
+class ApiHMACKeyWithMaxFailedAttemptsFactory(ApiHMACKeyFactory):
+    class Meta:
+        model = ApiHMACKey
+
+    failed_attempts = 9999

@@ -19,6 +19,7 @@ from django_hmac_authentication.models import ApiHMACKey
 from django_hmac_authentication.server_utils import aes_decrypt_hmac_secret
 
 auth_req_timeout = getattr(settings, 'HMAC_AUTH_REQUEST_TIMEOUT', 5)
+failed_attempts_threshold = getattr(settings, 'HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD', -1)
 
 
 class HMACAuthentication(authentication.BaseAuthentication):
@@ -91,6 +92,22 @@ class HMACAuthentication(authentication.BaseAuthentication):
             request, auth_method, date_in, hmac_key
         )
         if not computed_signature == signature:
+            if failed_attempts_threshold > 0:
+                self._revoke_key_on_failed_attempts(hmac_key)
             raise SignatureVerificationException()
 
         return hmac_key.user, None
+
+    def _revoke_key_on_failed_attempts(self, hmac_key):
+        # check db field max value
+        failed_attempts = hmac_key.failed_attempts + 1
+        if failed_attempts < 32767:
+            hmac_key.failed_attempts = failed_attempts
+            hmac_key.save()
+
+        if hmac_key.failed_attempts >= failed_attempts_threshold:
+            hmac_key.revoked = True
+            hmac_key.save()
+            raise SignatureVerificationException(
+                'Signature verification failed. Too many failed attempts. Key revoked.'
+            )
