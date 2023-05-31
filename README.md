@@ -7,7 +7,11 @@ Django hmac authentication with shared secret
 * Reject requests earlier than configured timeout
 * Supports `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256`
 * HMAC secret can be created with management command or obtained with a configured url
-* Supports Javascript and Python clients for programmatic access
+* Supports Javascript and Python clients for programmatic access 
+
+
+New feature
+* Optional configuration to auto revoke keys after N failed attempts to authenticate
 
 # 1. Install
 `pip install django_hmac_authentication`
