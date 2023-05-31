@@ -23,7 +23,12 @@ Django hmac authentication with shared secret
 * Add `django_hmac_authentication` to installed apps along with `rest_framework`.
 * Add hmac authentication class to `REST_FRAMEWORK` in `settings.py`. 
 
-* Example
+Optional configurations:
+
+* `HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD` for maximum tolerated failed attempts.
+  Setting this value will enable revoking keys that exceed max failed attempts.
+
+Example
 ```python
 MAX_HMACS_PER_USER = 10
 HMAC_AUTH_REQUEST_TIMEOUT = 4
@@ -45,6 +50,9 @@ REST_FRAMEWORK = {
         'django_hmac_authentication.authentication.HMACAuthentication',
     ],
 }
+
+# Optional configuration
+HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD = 10
 ```
 
 ## 2.2 urls.py

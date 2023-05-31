@@ -19,6 +19,9 @@ class ApiHMACKey(models.Model):
     secret = models.CharField(_('Secret'), max_length=512, null=False, editable=False)
     salt = models.CharField(_('Salt'), max_length=80, null=False, editable=False)
     revoked = models.BooleanField(_('Revoked'), default=False)
+    failed_attempts = models.PositiveSmallIntegerField(
+        _('Failed authentication attempts'), default=0, null=False, blank=False
+    )
 
     def __str__(self):
         return f'{self.user}'
