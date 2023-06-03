@@ -1,0 +1,32 @@
+stages:
+    - test
+    - package
+    - upload
+
+.pyenv:
+  image: python:3.10
+  before_script:
+    - pip install -r dev-requirements.txt
+
+unit_tests:
+   stage: test
+   extends: .pyenv
+   script:
+       - echo "Pytest `date`"
+       - cd src && pytest -v
+
+build_package:
+  stage: package
+  extends: .pyenv
+  script:
+    - echo "Package `date`"
+    - python3 -m build
+  artifacts:
+    paths:
+      - dist
+
+upload_pypi:
+  stage: upload
+  extends: .pyenv
+  when: manual
+  script: echo "Upload Hello Gitlab" `date`
