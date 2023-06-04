@@ -1,0 +1,40 @@
+stages:
+    - test
+    - package
+    - upload
+
+.pyenv:
+  image: python:3.10
+  before_script:
+    - pip install -r dev-requirements.txt
+
+unit_tests:
+   stage: test
+   extends: .pyenv
+   script:
+       - echo "Pytest " `date`
+       - cd src && pytest -v
+
+build_package:
+  stage: package
+  extends: .pyenv
+  script:
+    - echo "Package " `date`
+    - python3 -m build
+    - ls -l dist/ | tee dist/ls-artefacts.txt
+    - sha256sum dist/* | tee dist/sha256sum-artefacts.txt
+  artifacts:
+    paths:
+      - dist
+    expire_in: 2 days
+
+upload_pypi:
+  stage: upload
+  extends: .pyenv
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  script:
+    - echo "Upload "`date`
+    - ls -l dist/
+    - python3 -m twine upload dist/*.whl
+    - python3 -m twine upload dist/*.tar.gz
