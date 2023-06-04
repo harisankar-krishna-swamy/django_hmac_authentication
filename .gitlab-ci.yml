@@ -37,9 +37,7 @@ upload_pypi:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
   script:
     - echo "Upload "`date`
+    - pip install -r dist-requirements.txt
     - ls -l dist/
-    - touch $PYPIRC_FILE && echo "[pypi]" > $PYPIRC_FILE
-    - echo "username = $PYPI_USERNAME" >> $PYPIRC_FILE
-    - echo "password = $PYPI_API_TOKEN" >> $PYPIRC_FILE
     - python3 -m twine upload dist/*.whl
     - python3 -m twine upload dist/*.tar.gz
