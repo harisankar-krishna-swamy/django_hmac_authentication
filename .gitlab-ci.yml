@@ -31,10 +31,15 @@ build_package:
 upload_pypi:
   stage: upload
   extends: .pyenv
+  variables:
+    PYPIRC_FILE: "~/.pypirc"
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
   script:
     - echo "Upload "`date`
     - ls -l dist/
+    - echo "[pypi]" > $PYPIRC_FILE
+    - echo "username = $PYPI_USERNAME" >> $PYPIRC_FILE
+    - echo "password = $PYPI_API_TOKEN" >> $PYPIRC_FILE
     - python3 -m twine upload dist/*.whl
     - python3 -m twine upload dist/*.tar.gz
