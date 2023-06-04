@@ -12,17 +12,17 @@ unit_tests:
    stage: test
    extends: .pyenv
    script:
-       - echo "Pytest `date`"
+       - echo "Pytest " `date`
        - cd src && pytest -v
 
 build_package:
   stage: package
   extends: .pyenv
   script:
-    - echo "Package `date`"
+    - echo "Package " `date`
     - python3 -m build
-    - ls -l dist/
-    - sha256sum dist/*
+    - ls -l dist/ | tee dist/ls-artefacts.txt
+    - sha256sum dist/* | tee dist/sha256sum-artefacts.txt
   artifacts:
     paths:
       - dist
@@ -34,6 +34,7 @@ upload_pypi:
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
   script:
-    - echo "Upload Hello Gitlab" `date`
+    - echo "Upload "`date`
     - ls -l dist/
-    - python3 -m twine upload dist/*
+    - python3 -m twine upload dist/*.whl
+    - python3 -m twine upload dist/*.tar.gz

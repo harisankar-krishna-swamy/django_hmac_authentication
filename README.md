@@ -13,6 +13,7 @@ Django hmac authentication with shared secret
 New feature
 * Optional configuration to auto revoke keys after N failed attempts to authenticate
 
+>Built on Debian, KDE and CI/CD on GitLab
 # 1. Install
 `pip install django_hmac_authentication`
 
