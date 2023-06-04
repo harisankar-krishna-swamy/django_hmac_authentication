@@ -21,12 +21,19 @@ build_package:
   script:
     - echo "Package `date`"
     - python3 -m build
+    - ls -l dist/
+    - sha256sum dist/*
   artifacts:
     paths:
       - dist
+    expire_in: 2 days
 
 upload_pypi:
   stage: upload
   extends: .pyenv
-  when: manual
-  script: echo "Upload Hello Gitlab" `date`
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  script:
+    - echo "Upload Hello Gitlab" `date`
+    - ls -l dist/
+    - python3 -m twine upload dist/*
