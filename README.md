@@ -8,10 +8,10 @@ Django hmac authentication with shared secret
 * Supports `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256`
 * HMAC secret can be created with management command or obtained with a configured url
 * Supports Javascript and Python clients for programmatic access 
-
+* Optional configuration to auto revoke keys after N failed attempts to authenticate
 
 New feature
-* Optional configuration to auto revoke keys after N failed attempts to authenticate
+* Optional `HMAC_EXPIRES_IN` configurtation. If set HMAC key will expire after interval.
 
 >Built on Debian, KDE and CI/CD on GitLab
 # 1. Install
@@ -32,6 +32,8 @@ Optional configurations:
 
 * `HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD` for maximum tolerated failed attempts.
   Setting this value will enable revoking keys that exceed max failed attempts.
+
+* `HMAC_EXPIRES_IN` to expire keys after interval in hours, minutes or seconds.  Example`'1h'`, `'5m'`, `'3600s'` 
 
 Example
 ```python
@@ -56,8 +58,9 @@ REST_FRAMEWORK = {
     ],
 }
 
-# Optional configuration
+# Optional configurations
 HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD = 10
+HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD = '5m'
 ```
 
 ## 2.2 urls.py

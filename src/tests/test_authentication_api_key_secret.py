@@ -1,6 +1,5 @@
 import base64
-import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
 from unittest import mock
 
@@ -14,6 +13,7 @@ from django_hmac_authentication.authentication import HMACAuthentication
 from django_hmac_authentication.client_utils import prepare_string_to_sign, sign_string
 from django_hmac_authentication.exceptions import (
     DateFormatException,
+    ExpiredKeyException,
     ExpiredRequestException,
     KeyDoesNotExistException,
     RevokedKeyException,
@@ -72,9 +72,7 @@ class TestHMACAuthentication(APITestCase):
 
     def _request_auth_header_fields(self, req_data, digest):
         secret = aes_decrypt_hmac_secret(self.enc_secret, self.enc_salt)
-        utc_8601 = (
-            datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
-        )
+        utc_8601 = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
         string_to_sign = prepare_string_to_sign(req_data, utc_8601, digest)
         signature = sign_string(string_to_sign, secret, digest)
         return signature, utc_8601
@@ -221,7 +219,7 @@ class TestHMACAuthentication(APITestCase):
     def test_hmac_authentication__timeout(self):
         factory = APIRequestFactory()
         req_data = ''
-        initial_datetime = datetime.datetime.utcnow() - timedelta(seconds=6)
+        initial_datetime = datetime.utcnow() - timedelta(seconds=6)
         with freeze_time(initial_datetime):
             signature, utc_8601 = self._request_auth_header_fields(
                 req_data, 'HMAC-SHA512'
@@ -384,3 +382,29 @@ class TestHMACAuthentication(APITestCase):
             HTTPStatus.FORBIDDEN,
             'Authentication must fail on malformed header',
         )
+
+    def test_hmac_authentication__expires_in(self):
+        initial_datetime = datetime.now(timezone.utc)
+        test_expires_at = initial_datetime + timedelta(days=1)
+        factory = APIRequestFactory()
+        req_data = ''
+        with mock.patch(
+            'django_hmac_authentication.authentication.hmac_expires_in',
+            '1d',
+        ):
+            with freeze_time(test_expires_at):
+                signature, utc_8601 = self._request_auth_header_fields(
+                    req_data, 'HMAC-SHA512'
+                )
+                headers = {
+                    f'{self.auth_header}': f'HMAC-SHA512 {self.hmac_key.id};{signature};{utc_8601}',
+                    'Content-Type': 'application/json',
+                }
+                request = factory.get('/', data=None, **headers)
+                response = self.view(request)
+                self.assertEqual(
+                    response.status_code,
+                    HTTPStatus.FORBIDDEN,
+                    'Expired key must fail authentication',
+                )
+                self._assert_response_error_detail(response.data, ExpiredKeyException())

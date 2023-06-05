@@ -12,6 +12,7 @@ class AdminApiHMACKey(admin.ModelAdmin):
         'user',
         'id',
         'deactivated',
+        'expired',
         'created_at',
         'modified_on',
     )
@@ -20,12 +21,13 @@ class AdminApiHMACKey(admin.ModelAdmin):
         'user',
         'id',
     )
-    fields = ('created_at', 'modified_on', 'user', 'id', 'revoked')
+    fields = ('created_at', 'modified_on', 'user', 'id', 'revoked', 'expires_at')
     readonly_fields = (
         'user',
         'id',
         'created_at',
         'modified_on',
+        'expires_at',
     )
 
     @admin.display(description='active', boolean=True)

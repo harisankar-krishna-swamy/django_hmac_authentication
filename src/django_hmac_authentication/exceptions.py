@@ -36,3 +36,8 @@ class SignatureVerificationException(AuthenticationFailed):
 class DateFormatException(AuthenticationFailed):
     default_detail = _('Invalid date format in Authorization header.')
     default_code = 'date_format'
+
+
+class ExpiredKeyException(AuthenticationFailed):
+    default_detail = _('Key has expired.')
+    default_code = 'expired_key'

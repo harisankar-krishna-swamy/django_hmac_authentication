@@ -9,6 +9,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from django_hmac_authentication.client_utils import prepare_string_to_sign, sign_string
 from django_hmac_authentication.exceptions import (
     DateFormatException,
+    ExpiredKeyException,
     ExpiredRequestException,
     KeyDoesNotExistException,
     RevokedKeyException,
@@ -20,6 +21,7 @@ from django_hmac_authentication.server_utils import aes_decrypt_hmac_secret
 
 auth_req_timeout = getattr(settings, 'HMAC_AUTH_REQUEST_TIMEOUT', 5)
 failed_attempts_threshold = getattr(settings, 'HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD', -1)
+hmac_expires_in = getattr(settings, 'HMAC_EXPIRES_IN', None)
 
 
 class HMACAuthentication(authentication.BaseAuthentication):
@@ -84,6 +86,11 @@ class HMACAuthentication(authentication.BaseAuthentication):
 
         if hmac_key.revoked:
             raise RevokedKeyException()
+
+        if hmac_expires_in and (
+            not hmac_key.expires_at or hmac_key.expires_at <= utcnow
+        ):
+            raise ExpiredKeyException()
 
         if not hmac_key.user.is_active:
             raise AuthenticationFailed('User is inactive')
