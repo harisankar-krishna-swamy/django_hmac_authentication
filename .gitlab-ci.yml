@@ -8,6 +8,13 @@ stages:
   before_script:
     - pip install -r dev-requirements.txt
 
+pre_commit:
+   stage: test
+   extends: .pyenv
+   script:
+       - echo "Pre-commit " `date`
+       - pre-commit run --all-files
+
 unit_tests:
    stage: test
    extends: .pyenv
