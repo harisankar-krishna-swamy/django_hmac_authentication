@@ -38,8 +38,6 @@ build_package:
 upload_pypi:
   stage: upload
   extends: .pyenv
-  variables:
-    PYPIRC_FILE: "~/.pypirc"
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
   script:
