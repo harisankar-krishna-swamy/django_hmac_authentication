@@ -11,7 +11,7 @@ Django hmac authentication with shared secret
 * Optional configuration to auto revoke keys after N failed attempts to authenticate
 
 New feature
-* Optional `HMAC_EXPIRES_IN` configurtation. If set HMAC key will expire after interval.
+* Optional `HMAC_EXPIRES_IN` configuration. If set HMAC keys will expire after interval.
 
 >Built on Debian, KDE and CI/CD on GitLab :rocket:
 # 1. Install
