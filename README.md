@@ -13,7 +13,7 @@ Django hmac authentication with shared secret
 New feature
 * Optional `HMAC_EXPIRES_IN` configuration. If set HMAC keys will expire after interval.
 
->Built on Debian, KDE and CI/CD on GitLab :rocket:
+>Built on Debian, KDE and CI/CD on GitLab :rocket: :rocket:
 # 1. Install
 `pip install django_hmac_authentication`
 
