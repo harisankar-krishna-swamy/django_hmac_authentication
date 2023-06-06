@@ -1,5 +1,6 @@
 import base64
 import secrets
+from datetime import datetime, timedelta, timezone
 
 import factory
 from django.contrib.auth import get_user_model
@@ -48,6 +49,7 @@ class ApiHMACKeyFactory(DjangoModelFactory):
     secret = base64.b64encode(test_encrypted).decode('utf-8')
     revoked = False
     failed_attempts = 0
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
 
 
 class ApiHMACKeyWithMaxFailedAttemptsFactory(ApiHMACKeyFactory):

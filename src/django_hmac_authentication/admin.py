@@ -1,4 +1,5 @@
 # Register your models here.
+from datetime import datetime, timezone
 
 from django.contrib import admin
 
@@ -11,6 +12,7 @@ class AdminApiHMACKey(admin.ModelAdmin):
         'user',
         'id',
         'deactivated',
+        'expired',
         'created_at',
         'modified_on',
     )
@@ -19,17 +21,24 @@ class AdminApiHMACKey(admin.ModelAdmin):
         'user',
         'id',
     )
-    fields = ('created_at', 'modified_on', 'user', 'id', 'revoked')
+    fields = ('created_at', 'modified_on', 'user', 'id', 'revoked', 'expires_at')
     readonly_fields = (
         'user',
         'id',
         'created_at',
         'modified_on',
+        'expires_at',
     )
 
     @admin.display(description='active', boolean=True)
     def deactivated(self, obj):
         return not obj.revoked
+
+    @admin.display(description='expired', boolean=True)
+    def expired(self, obj):
+        if not obj.expires_at:
+            return False
+        return obj.expires_at <= datetime.now(tz=timezone.utc)
 
 
 admin.site.register(ApiHMACKey, AdminApiHMACKey)

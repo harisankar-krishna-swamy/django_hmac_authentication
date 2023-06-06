@@ -22,6 +22,9 @@ class ApiHMACKey(models.Model):
     failed_attempts = models.PositiveSmallIntegerField(
         _('Failed authentication attempts'), default=0, null=False, blank=False
     )
+    expires_at = DateTimeField(
+        _('Expires at'), default=None, null=True, db_index=True, editable=False
+    )
 
     def __str__(self):
         return f'{self.user}'

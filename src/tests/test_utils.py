@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 from ddt import data, ddt, unpack
 from django.test import TestCase
@@ -8,6 +9,7 @@ from django_hmac_authentication.client_utils import hash_content, sign_string
 from django_hmac_authentication.server_utils import (
     aes_decrypt_hmac_secret,
     aes_encrypted_hmac_secret,
+    timedelta_from_config,
 )
 
 
@@ -85,3 +87,28 @@ class TestUtils(TestCase):
             calculated_b64signature == expected_b64signature,
             f'Computed signature did not match expected for {digest}',
         )
+
+    # expires_in config, timedelta, exception
+    @data(
+        (None, None, TypeError),
+        ('', None, TypeError),
+        ('20d', None, ValueError),
+        ('0h', None, ValueError),
+        ('10h', timedelta(hours=10), None),
+        ('15m', timedelta(minutes=15), None),
+        ('3600s', timedelta(seconds=3600), None),
+    )
+    @unpack
+    def test_timedelta_from_config(
+        self, expires_in='1h', expected_timedelta=timedelta(hours=1), exc=None
+    ):
+        if exc:
+            with self.assertRaises(exc):
+                _ = timedelta_from_config(expires_in)
+        else:
+            td = timedelta_from_config(expires_in)
+            self.assertEqual(
+                expected_timedelta,
+                td,
+                f'calculated timedelta did not match expected value for input {expires_in}',
+            )
