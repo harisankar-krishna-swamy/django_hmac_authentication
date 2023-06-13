@@ -8,7 +8,7 @@ stages:
   before_script:
     - pip install -r dev-requirements.txt
 
-.pre_commit:
+pre_commit:
    stage: test
    extends: .pyenv
    script:
@@ -38,7 +38,7 @@ unit_tests:
          coverage_format: cobertura
          path: $cov_reports_dir/coverage.xml
 
-.build_package:
+build_package:
   stage: package
   extends: .pyenv
   script:
@@ -51,7 +51,7 @@ unit_tests:
       - dist
     expire_in: 2 days
 
-.upload_pypi:
+upload_pypi:
   stage: upload
   extends: .pyenv
   rules:
