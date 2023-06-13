@@ -1,0 +1,8 @@
+[run]
+source = django_hmac_authentication
+data_file = tests/coverage/.coverage
+omit = */migrations/*
+branch = true
+
+[html]
+directory = tests/coverage/html
