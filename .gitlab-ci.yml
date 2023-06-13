@@ -8,7 +8,7 @@ stages:
   before_script:
     - pip install -r dev-requirements.txt
 
-pre_commit:
+.pre_commit:
    stage: test
    extends: .pyenv
    script:
@@ -18,11 +18,27 @@ pre_commit:
 unit_tests:
    stage: test
    extends: .pyenv
+   variables:
+     cov_reports_dir: $CI_PROJECT_DIR/src/tests/coverage
    script:
        - echo "Pytest " `date`
-       - cd src && pytest -v
+       - cd src && 
+         pytest --cov-config=$CI_PROJECT_DIR/.coveragerc
+         --cov --cov-report term
+         --cov-report xml:$cov_reports_dir/coverage.xml 
+         --cov-report html
 
-build_package:
+   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+   artifacts:
+     paths:
+       - $cov_reports_dir
+     expire_in: 2 days
+     reports:
+       coverage_report:
+         coverage_format: cobertura
+         path: $cov_reports_dir/coverage.xml
+
+.build_package:
   stage: package
   extends: .pyenv
   script:
@@ -35,7 +51,7 @@ build_package:
       - dist
     expire_in: 2 days
 
-upload_pypi:
+.upload_pypi:
   stage: upload
   extends: .pyenv
   rules:
