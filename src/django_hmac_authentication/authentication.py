@@ -11,6 +11,7 @@ from django_hmac_authentication.exceptions import (
     DateFormatException,
     ExpiredKeyException,
     ExpiredRequestException,
+    FutureRequestException,
     KeyDoesNotExistException,
     RevokedKeyException,
     SignatureVerificationException,
@@ -75,6 +76,9 @@ class HMACAuthentication(authentication.BaseAuthentication):
             req_utc = datetime.datetime.fromisoformat(date_in)
         except ValueError:
             raise DateFormatException()
+
+        if req_utc >= utcnow:
+            raise FutureRequestException()
 
         delta = utcnow - req_utc
         if delta.total_seconds() > auth_req_timeout:

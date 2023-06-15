@@ -28,6 +28,11 @@ class ExpiredRequestException(AuthenticationFailed):
     default_code = 'expired_request'
 
 
+class FutureRequestException(AuthenticationFailed):
+    default_detail = _('Request cannot be in future.')
+    default_code = 'future_request'
+
+
 class SignatureVerificationException(AuthenticationFailed):
     default_detail = _('Signature verification failed.')
     default_code = 'verification_failed'
