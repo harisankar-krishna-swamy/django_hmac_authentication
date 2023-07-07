@@ -2,6 +2,7 @@ import base64
 import os
 import secrets
 from datetime import datetime, timedelta, timezone
+from functools import lru_cache
 from hashlib import pbkdf2_hmac
 
 from django.conf import settings
@@ -31,6 +32,7 @@ def aes_encrypted_hmac_secret() -> tuple:
     return hmac_secret, encrypted, enc_key, salt
 
 
+@lru_cache(maxsize=100)
 def aes_decrypt_hmac_secret(encrypted: bytes, salt: bytes) -> bytes:
     enc_key = pbkdf2_hmac(hash_func, settings.SECRET_KEY.encode(encoding), salt, 1000)
     return aes_crypt(encrypted, enc_key, salt[-16:], False)
