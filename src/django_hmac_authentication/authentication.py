@@ -17,8 +17,10 @@ from django_hmac_authentication.exceptions import (
     SignatureVerificationException,
     UnsupportedHMACMethodException,
 )
-from django_hmac_authentication.models import ApiHMACKey
-from django_hmac_authentication.server_utils import aes_decrypt_hmac_secret
+from django_hmac_authentication.server_utils import (
+    aes_decrypt_hmac_secret,
+    get_api_hmac_key,
+)
 
 auth_req_timeout = getattr(settings, 'HMAC_AUTH_REQUEST_TIMEOUT', 5)
 failed_attempts_threshold = getattr(settings, 'HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD', -1)
@@ -84,7 +86,8 @@ class HMACAuthentication(authentication.BaseAuthentication):
         if delta.total_seconds() > auth_req_timeout:
             raise ExpiredRequestException()
 
-        hmac_key = ApiHMACKey.objects.filter(id=key).first()
+        hmac_key = get_api_hmac_key(key_id=key)
+
         if not hmac_key:
             raise KeyDoesNotExistException()
 

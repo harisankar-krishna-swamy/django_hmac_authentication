@@ -9,11 +9,13 @@ Django hmac authentication with shared secret
 * HMAC secret can be created with management command or obtained with a configured url
 * Supports Javascript and Python clients for programmatic access 
 * Optional configuration to auto revoke keys after N failed attempts to authenticate
-
-New feature
 * Optional `HMAC_EXPIRES_IN` configuration. If set HMAC keys will expire after interval.
 
->Built on Debian, KDE and CI/CD on GitLab :rocket: :rocket:
+New features
+* Option to speedup using cache in Django's `CACHES` settings.
+* A lru_cache is enabled locally to save compute time to decode hmac keys
+
+> :rocket: :rocket: Built on Debian, KDE and CI/CD on GitLab :rocket: :rocket:
 # 1. Install
 `pip install django_hmac_authentication`
 
@@ -34,6 +36,9 @@ Optional configurations:
   Setting this value will enable revoking keys that exceed max failed attempts.
 
 * `HMAC_EXPIRES_IN` to expire keys after interval in hours, minutes or seconds.  Example`'1h'`, `'5m'`, `'3600s'` 
+
+* `HMAC_CACHE_ALIAS` Alias of a cache backend in Django's `CACHES` settings. When set, the cache specified by the alias 
+   is used to cache hmac keys. Example: `hmac_cache`. Default: None (i.e caching disabled)
 
 Example
 ```python
@@ -61,6 +66,9 @@ REST_FRAMEWORK = {
 # Optional configurations
 HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD = 10
 HMAC_EXPIRES_IN = '5m'
+# This cache alias must be defined in Django's CACHES. 
+# See https://docs.djangoproject.com/en/4.2/ref/settings/#caches
+HMAC_CACHE_ALIAS = 'hmac_cache'
 ```
 
 ## 2.2 urls.py

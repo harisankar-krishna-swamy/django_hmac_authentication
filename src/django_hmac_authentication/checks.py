@@ -70,4 +70,16 @@ def check_configuration(**kwargs):
             )
         )
 
+    # HMAC_CACHE_ALIAS
+    hmac_cache_alias = getattr(settings, 'HMAC_CACHE_ALIAS', None)
+    if hmac_cache_alias and hmac_cache_alias not in settings.CACHES:
+        errors.append(
+            Error(
+                f'Missing entry in settings.py CACHES for HMAC_CACHE_ALIAS "{hmac_cache_alias}"',
+                hint="See https://docs.djangoproject.com/en/4.2/ref/settings/#caches",
+                obj=repr(hmac_expires_in),
+                id='django_hmac_authentication.E005',
+            )
+        )
+
     return errors
