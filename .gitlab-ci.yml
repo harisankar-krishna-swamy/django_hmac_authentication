@@ -18,6 +18,8 @@ pre_commit:
 unit_tests:
    stage: test
    extends: .pyenv
+   services:
+     - memcached:latest
    variables:
      cov_reports_dir: $CI_PROJECT_DIR/src/tests/coverage
    script:
