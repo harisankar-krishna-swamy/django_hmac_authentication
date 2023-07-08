@@ -30,6 +30,9 @@ class TestChecks(TestCase):
         ('HMAC_EXPIRES_IN', '5', 'django_hmac_authentication.E004'),
         ('HMAC_EXPIRES_IN', '5g', 'django_hmac_authentication.E004'),
         ('HMAC_EXPIRES_IN', '5m', None),
+        # HMAC_CACHE_ALIAS
+        ('HMAC_CACHE_ALIAS', None, None),
+        ('HMAC_CACHE_ALIAS', 'hmac_cache', 'django_hmac_authentication.E005'),
     )
 
     @data(*test_data__settings)

@@ -6,6 +6,7 @@ from functools import lru_cache
 from hashlib import pbkdf2_hmac
 
 from django.conf import settings
+from django.core.cache import caches
 from rest_framework.exceptions import ValidationError
 
 from django_hmac_authentication.aes import aes_crypt
@@ -20,6 +21,8 @@ max_hmacs_per_user = getattr(settings, 'MAX_HMACS_PER_USER', 10)
 hmac_expires_in = getattr(settings, 'HMAC_EXPIRES_IN', None)
 expires_in_units = ('h', 'm', 's')
 expires_in_config_err = 'expires_in config must be string. Example: 4h, 5m, 3600s etc'
+
+hmac_cache_alias = getattr(settings, 'HMAC_CACHE_ALIAS', None)
 
 
 def aes_encrypted_hmac_secret() -> tuple:
@@ -76,3 +79,16 @@ def timedelta_from_config(expires_in: str):
         return timedelta(minutes=value)
     else:
         return timedelta(seconds=value)
+
+
+def get_api_hmac_key(key_id):
+    cache_key = f'ApiHMACKey.id.{key_id}'
+    if hmac_cache_alias:
+        hmac_key = caches[hmac_cache_alias].get(cache_key)
+        if not hmac_key:
+            hmac_key = ApiHMACKey.objects.filter(id=key_id).first()
+            caches[hmac_cache_alias].set(cache_key, hmac_key)
+
+        return hmac_key
+    else:
+        return ApiHMACKey.objects.filter(id=key_id).first()

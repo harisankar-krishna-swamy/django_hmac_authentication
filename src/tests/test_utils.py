@@ -1,5 +1,6 @@
 import os
 from datetime import timedelta
+from unittest import mock
 
 from ddt import data, ddt, unpack
 from django.test import TestCase
@@ -9,8 +10,10 @@ from django_hmac_authentication.client_utils import hash_content, sign_string
 from django_hmac_authentication.server_utils import (
     aes_decrypt_hmac_secret,
     aes_encrypted_hmac_secret,
+    get_api_hmac_key,
     timedelta_from_config,
 )
+from tests.factories import ApiHMACKeyFactory, ApiHMACKeyUserFactory
 
 
 @ddt
@@ -112,3 +115,34 @@ class TestUtils(TestCase):
                 td,
                 f'calculated timedelta did not match expected value for input {expires_in}',
             )
+
+    def test_get_api_hmac_key__caching(self):
+        user = ApiHMACKeyUserFactory()
+        hmac_key = ApiHMACKeyFactory(user=user)
+        with self.assertNumQueries(1):
+            db_hmac_key = get_api_hmac_key(hmac_key.id)
+            self.assertTrue(
+                db_hmac_key.id == hmac_key.id,
+                'HMAC Key retrieved from db did not match original key',
+            )
+
+        name = 'HMAC_CACHE_ALIAS'
+        from django.conf import settings
+
+        orig_value = getattr(settings, name, None)
+        setattr(settings, name, 'default')
+
+        with mock.patch(
+            'django_hmac_authentication.server_utils.hmac_cache_alias',
+            'default',
+        ):
+            with self.assertNumQueries(1):
+                _ = get_api_hmac_key(hmac_key.id)
+            with self.assertNumQueries(0):
+                cached_hmac_key = get_api_hmac_key(hmac_key.id)
+                self.assertTrue(
+                    cached_hmac_key.id == hmac_key.id,
+                    'HMAC Key retrieved from cache did not match original key',
+                )
+
+        setattr(settings, name, orig_value)
