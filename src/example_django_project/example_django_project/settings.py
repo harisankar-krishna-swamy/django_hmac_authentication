@@ -45,8 +45,10 @@ INSTALLED_APPS = [
 
 MAX_HMACS_PER_USER = 10
 HMAC_AUTH_REQUEST_TIMEOUT = 4
-HMAC_EXPIRES_IN = '5m'
 
+# Optional config
+HMAC_EXPIRES_IN = '1h'
+HMAC_CACHE_ALIAS = 'default'
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
