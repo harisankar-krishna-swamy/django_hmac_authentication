@@ -10,4 +10,6 @@ class DjangoHMACAuthenticationConfig(AppConfig):
     verbose_name = _("Django HMAC Authentication")
 
     def ready(self):
+        import django_hmac_authentication.signals  # noqa
+
         checks.register(check_configuration)

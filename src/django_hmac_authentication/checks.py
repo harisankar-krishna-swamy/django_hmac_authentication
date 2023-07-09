@@ -58,17 +58,18 @@ def check_configuration(**kwargs):
 
     # HMAC_EXPIRES_IN
     hmac_expires_in = getattr(settings, 'HMAC_EXPIRES_IN', None)
-    try:
-        timedelta_from_config(hmac_expires_in)
-    except (TypeError, ValueError):
-        errors.append(
-            Error(
-                f'If set, HMAC_EXPIRES_IN expire keys after interval in hours, minutes or seconds.  Found {repr(hmac_expires_in)}',
-                hint="Example '1h', '5m', '3600s'",
-                obj=repr(hmac_expires_in),
-                id='django_hmac_authentication.E004',
+    if hmac_expires_in:
+        try:
+            timedelta_from_config(hmac_expires_in)
+        except (TypeError, ValueError):
+            errors.append(
+                Error(
+                    f'If set, HMAC_EXPIRES_IN expire keys after interval in hours, minutes or seconds.  Found {repr(hmac_expires_in)}',
+                    hint="Example '1h', '5m', '3600s'",
+                    obj=repr(hmac_expires_in),
+                    id='django_hmac_authentication.E004',
+                )
             )
-        )
 
     # HMAC_CACHE_ALIAS
     hmac_cache_alias = getattr(settings, 'HMAC_CACHE_ALIAS', None)

@@ -26,6 +26,7 @@ class TestChecks(TestCase):
         ('HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD', '5', 'django_hmac_authentication.E003'),
         ('HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD', 5, None),
         # HMAC_EXPIRES_IN
+        ('HMAC_EXPIRES_IN', None, None),
         ('HMAC_EXPIRES_IN', 5, 'django_hmac_authentication.E004'),
         ('HMAC_EXPIRES_IN', '5', 'django_hmac_authentication.E004'),
         ('HMAC_EXPIRES_IN', '5g', 'django_hmac_authentication.E004'),
