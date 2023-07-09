@@ -22,18 +22,22 @@ class TestSignalHandlers(TestCase):
             'django_hmac_authentication.server_utils.hmac_cache_alias',
             'default',
         ):
-            # trigger retrieval and cache
-            get_api_hmac_key(self.hmac_key.id)
+            with mock.patch(
+                'django_hmac_authentication.signals.hmac_cache_alias',
+                'default',
+            ):
+                # trigger retrieval and cache
+                get_api_hmac_key(self.hmac_key.id)
 
-            # change and save
-            self.hmac_key.revoked = True
-            self.hmac_key.save()
-            self.hmac_key.refresh_from_db()
+                # change and save
+                self.hmac_key.revoked = True
+                self.hmac_key.save()
+                self.hmac_key.refresh_from_db()
 
-            key_post_save = get_api_hmac_key(self.hmac_key.id)
-            self.assertTrue(
-                self.hmac_key.revoked == key_post_save.revoked,
-                'post_save signal handler was not invoked to update cache',
-            )
+                key_post_save = get_api_hmac_key(self.hmac_key.id)
+                self.assertTrue(
+                    self.hmac_key.revoked == key_post_save.revoked,
+                    'post_save signal handler was not invoked to update cache',
+                )
 
         setattr(settings, name, orig_value)

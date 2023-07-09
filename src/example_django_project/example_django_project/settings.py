@@ -48,7 +48,7 @@ HMAC_AUTH_REQUEST_TIMEOUT = 4
 
 # Optional config
 HMAC_EXPIRES_IN = '1h'
-HMAC_CACHE_ALIAS = 'default'
+
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
