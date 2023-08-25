@@ -2,7 +2,6 @@ import base64
 import datetime
 from datetime import timezone
 
-from django.conf import settings
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
 
@@ -21,10 +20,11 @@ from django_hmac_authentication.server_utils import (
     aes_decrypt_hmac_secret,
     get_api_hmac_key,
 )
+from django_hmac_authentication.settings import setting_for
 
-auth_req_timeout = getattr(settings, 'HMAC_AUTH_REQUEST_TIMEOUT', 5)
-failed_attempts_threshold = getattr(settings, 'HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD', -1)
-hmac_expires_in = getattr(settings, 'HMAC_EXPIRES_IN', None)
+auth_req_timeout = setting_for('HMAC_AUTH_REQUEST_TIMEOUT')
+failed_attempts_threshold = setting_for('HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD')
+hmac_expires_in = setting_for('HMAC_EXPIRES_IN')
 
 
 class HMACAuthentication(authentication.BaseAuthentication):
@@ -106,7 +106,7 @@ class HMACAuthentication(authentication.BaseAuthentication):
             request, auth_method, date_in, hmac_key
         )
         if not computed_signature == signature:
-            if failed_attempts_threshold > 0:
+            if failed_attempts_threshold and failed_attempts_threshold > 0:
                 self._revoke_key_on_failed_attempts(hmac_key)
             raise SignatureVerificationException()
 

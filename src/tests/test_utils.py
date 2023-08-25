@@ -1,3 +1,4 @@
+import copy
 import os
 from datetime import timedelta
 from unittest import mock
@@ -129,8 +130,9 @@ class TestUtils(TestCase):
         name = 'HMAC_CACHE_ALIAS'
         from django.conf import settings
 
-        orig_value = getattr(settings, name, None)
-        setattr(settings, name, 'default')
+        hmac_settings = getattr(settings, 'HMAC_AUTHENTICATION_SETTINGS', None)
+        orig_value = copy.deepcopy(hmac_settings)
+        hmac_settings[name] = 'default'
 
         with mock.patch(
             'django_hmac_authentication.server_utils.hmac_cache_alias',
@@ -145,4 +147,4 @@ class TestUtils(TestCase):
                     'HMAC Key retrieved from cache did not match original key',
                 )
 
-        setattr(settings, name, orig_value)
+        setattr(settings, 'HMAC_AUTHENTICATION_SETTINGS', orig_value)

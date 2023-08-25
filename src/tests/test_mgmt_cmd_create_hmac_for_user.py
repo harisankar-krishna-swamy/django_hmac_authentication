@@ -9,6 +9,7 @@ from freezegun import freeze_time
 
 from django_hmac_authentication.models import ApiHMACKey
 from django_hmac_authentication.server_utils import timedelta_from_config
+from django_hmac_authentication.settings import setting_for
 from tests.factories import ApiHMACKeyUserFactory
 
 
@@ -42,11 +43,11 @@ class TestMgmtCmdCreateHMACForUser(TestCase):
             )
 
     def test__max_hmac_per_user(self):
-        from django.conf import settings
+        max_hmacs = setting_for('MAX_HMACS_PER_USER')
 
-        for i in range(0, settings.MAX_HMACS_PER_USER + 1):
+        for i in range(0, max_hmacs + 1):
             out = call_mgmt_command(self.cmd, self.user)
-            if i >= settings.MAX_HMACS_PER_USER:
+            if i >= max_hmacs:
                 self.assertIn('Maximum API secrets limit reached for user', out)
 
     def test__expires_in(self):

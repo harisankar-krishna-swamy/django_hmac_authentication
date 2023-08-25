@@ -43,11 +43,12 @@ INSTALLED_APPS = [
     "accounts",
 ]
 
-MAX_HMACS_PER_USER = 10
-HMAC_AUTH_REQUEST_TIMEOUT = 4
-
-# Optional config
-HMAC_EXPIRES_IN = '1h'
+HMAC_AUTHENTICATION_SETTINGS = {
+    'MAX_HMACS_PER_USER': 10,
+    'HMAC_AUTH_REQUEST_TIMEOUT': 4,
+    # Optional config
+    'HMAC_EXPIRES_IN': '1h',
+}
 
 CACHES = {
     'default': {
