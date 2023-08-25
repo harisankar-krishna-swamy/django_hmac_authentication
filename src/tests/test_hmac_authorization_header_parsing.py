@@ -19,7 +19,7 @@ test_data__authorization_header_parsing_valid = (
 
 
 @ddt
-class TestHMACAuthentication(APITestCase):
+class TestAuthorizationHeaderParsing(APITestCase):
     def setUp(self) -> None:
         self.auth = HMACAuthentication()
 
