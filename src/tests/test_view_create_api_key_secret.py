@@ -3,6 +3,7 @@ from http import HTTPStatus
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 
+from django_hmac_authentication.settings import setting_for
 from django_hmac_authentication.views import CreateApiHMACKey
 from tests.factories import ApiHMACKeyUserFactory, test_password
 
@@ -33,13 +34,14 @@ class TestViewCreateApiKey(TestCase):
         self._assert_http_ok_key_reponse(response)
 
     def test_view__max_keys_per_user(self):
-        from django.conf import settings
+        pass
 
-        for i in range(0, settings.MAX_HMACS_PER_USER + 1):
+        max_hmacs = setting_for('MAX_HMACS_PER_USER')
+        for i in range(0, max_hmacs + 1):
             data = {'username': self.user.username, 'password': test_password}
             request = factory.post('/', data=data, format='json')
             response = self.view(request)
-            if i < settings.MAX_HMACS_PER_USER:
+            if i < max_hmacs:
                 self._assert_http_ok_key_reponse(response)
             else:
                 self.assertEqual(

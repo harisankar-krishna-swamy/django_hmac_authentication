@@ -1,40 +1,42 @@
 # django_hmac_authentication
-Django hmac authentication with shared secret
+Django hmac authentication with encrypted shared secrets
 
-* Django model with HMAC shared secret 
-* Each user's shared secret is protected with separate key
-* Authentication class `HMACAuthentication` 
-* Reject requests earlier than configured timeout
+> :rocket: :rocket: Built on Debian, KDE and CI/CD on GitLab :penguin: :rocket: :rocket: 
+
+# Features
+
+* Django model for HMAC's shared secret 
+* Each user's shared secret is protected with separate key. Each user can have many secrets
+* Authentication class `HMACAuthentication` to use with Django Rest Framework 
+* Reject requests earlier than configured timeout and also with future timestamps 
 * Supports `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256`
 * HMAC secret can be created with management command or obtained with a configured url
 * Supports Javascript and Python clients for programmatic access 
 * Optional configuration to auto revoke keys after N failed attempts to authenticate
 * Optional `HMAC_EXPIRES_IN` configuration. If set HMAC keys will expire after interval.
-
-New features
-* Option to speedup using cache in Django's `CACHES` settings.
+* Option to speedup using a cache in Django's `CACHES` settings.
 * A lru_cache is enabled locally to save compute time to decode hmac keys
 
-> :rocket: :rocket: Built on Debian, KDE and CI/CD on GitLab :rocket: :rocket:
+### What's new
+* From v2.0.0 configuration is namespaced in a dict. See configuration below.
+
 # 1. Install
 `pip install django_hmac_authentication`
 
 # 2. Configuration
 
 ## 2.1 settings.py
+Set `HMAC_AUTHENTICATION_SETTINGS` dict with values for  
 
-* Add `MAX_HMACS_PER_USER`  
-  Default: 10  
-* Add `HMAC_AUTH_REQUEST_TIMEOUT` in seconds. Requests earlier than this are rejected
-  Default: `5`
-* Add `django_hmac_authentication` to installed apps along with `rest_framework`.
+* `MAX_HMACS_PER_USER` Default: 10  
+* `HMAC_AUTH_REQUEST_TIMEOUT` in seconds. Requests earlier than this are rejected. Default: `5`
+* `django_hmac_authentication` to installed apps along with `rest_framework`.
 * Add hmac authentication class to `REST_FRAMEWORK` in `settings.py`. 
 
-Optional configurations:
+Optional settings:
 
 * `HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD` for maximum tolerated failed attempts.
-  Setting this value will enable revoking keys that exceed max failed attempts.
-
+  Setting this value will auto revoke keys that exceed max failed attempts.
 * `HMAC_EXPIRES_IN` to expire keys after interval in hours, minutes or seconds.  Example`'1h'`, `'5m'`, `'3600s'` 
 
 * `HMAC_CACHE_ALIAS` Alias of a cache backend in Django's `CACHES` settings. When set, the cache specified by the alias 
@@ -42,8 +44,16 @@ Optional configurations:
 
 Example
 ```python
-MAX_HMACS_PER_USER = 10
-HMAC_AUTH_REQUEST_TIMEOUT = 4
+HMAC_AUTHENTICATION_SETTINGS = {
+    'MAX_HMACS_PER_USER':10,
+    'HMAC_AUTH_REQUEST_TIMEOUT': 4,
+    # Optional configurations
+    'HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD': 10,
+    'HMAC_EXPIRES_IN': '5m',
+    # This cache alias must be defined in Django's CACHES. 
+    # See https://docs.djangoproject.com/en/4.2/ref/settings/#caches
+    'HMAC_CACHE_ALIAS': 'hmac_cache'
+}
 
 INSTALLED_APPS = [
     ...,
@@ -52,23 +62,16 @@ INSTALLED_APPS = [
     ...
 ]
 
-
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
+        # add authentication class
         'django_hmac_authentication.authentication.HMACAuthentication',
     ],
 }
-
-# Optional configurations
-HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD = 10
-HMAC_EXPIRES_IN = '5m'
-# This cache alias must be defined in Django's CACHES. 
-# See https://docs.djangoproject.com/en/4.2/ref/settings/#caches
-HMAC_CACHE_ALIAS = 'hmac_cache'
 ```
 
 ## 2.2 urls.py

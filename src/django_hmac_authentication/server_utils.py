@@ -11,18 +11,19 @@ from rest_framework.exceptions import ValidationError
 
 from django_hmac_authentication.aes import aes_crypt
 from django_hmac_authentication.models import ApiHMACKey
+from django_hmac_authentication.settings import setting_for
 
 encoding = 'utf-8'
 hash_func = 'sha256'
 
 user_model = settings.AUTH_USER_MODEL
-max_hmacs_per_user = getattr(settings, 'MAX_HMACS_PER_USER', 10)
+max_hmacs_per_user = setting_for('MAX_HMACS_PER_USER')
 
-hmac_expires_in = getattr(settings, 'HMAC_EXPIRES_IN', None)
+hmac_expires_in = setting_for('HMAC_EXPIRES_IN')
 expires_in_units = ('h', 'm', 's')
 expires_in_config_err = 'expires_in config must be string. Example: 4h, 5m, 3600s etc'
 
-hmac_cache_alias = getattr(settings, 'HMAC_CACHE_ALIAS', None)
+hmac_cache_alias = setting_for('HMAC_CACHE_ALIAS')
 
 
 def aes_encrypted_hmac_secret() -> tuple:

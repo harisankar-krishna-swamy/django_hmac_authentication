@@ -4,11 +4,12 @@ from django.core.checks import Error
 
 def check_configuration(**kwargs):
     from django_hmac_authentication.server_utils import timedelta_from_config
+    from django_hmac_authentication.settings import setting_for
 
     errors = []
 
     # MAX_HMACS_PER_USER
-    max_hmacs_per_user = getattr(settings, 'MAX_HMACS_PER_USER', None)
+    max_hmacs_per_user = setting_for('MAX_HMACS_PER_USER')
     if (
         max_hmacs_per_user is None
         or not type(max_hmacs_per_user) == int
@@ -24,7 +25,7 @@ def check_configuration(**kwargs):
         )
 
     # HMAC_AUTH_REQUEST_TIMEOUT
-    hmac_auth_request_timeout = getattr(settings, 'HMAC_AUTH_REQUEST_TIMEOUT', None)
+    hmac_auth_request_timeout = setting_for('HMAC_AUTH_REQUEST_TIMEOUT')
     if (
         hmac_auth_request_timeout is None
         or not type(hmac_auth_request_timeout) == int
@@ -40,8 +41,8 @@ def check_configuration(**kwargs):
         )
 
     # HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD
-    hmac_auth_failed_attempts_threshold = getattr(
-        settings, 'HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD', None
+    hmac_auth_failed_attempts_threshold = setting_for(
+        'HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD'
     )
     if hmac_auth_failed_attempts_threshold is not None and (
         not type(hmac_auth_failed_attempts_threshold) == int
@@ -57,7 +58,7 @@ def check_configuration(**kwargs):
         )
 
     # HMAC_EXPIRES_IN
-    hmac_expires_in = getattr(settings, 'HMAC_EXPIRES_IN', None)
+    hmac_expires_in = setting_for('HMAC_EXPIRES_IN')
     if hmac_expires_in:
         try:
             timedelta_from_config(hmac_expires_in)
@@ -72,14 +73,26 @@ def check_configuration(**kwargs):
             )
 
     # HMAC_CACHE_ALIAS
-    hmac_cache_alias = getattr(settings, 'HMAC_CACHE_ALIAS', None)
+    hmac_cache_alias = setting_for('HMAC_CACHE_ALIAS')
     if hmac_cache_alias and hmac_cache_alias not in settings.CACHES:
         errors.append(
             Error(
                 f'Missing entry in settings.py CACHES for HMAC_CACHE_ALIAS "{hmac_cache_alias}"',
                 hint="See https://docs.djangoproject.com/en/4.2/ref/settings/#caches",
-                obj=repr(hmac_expires_in),
+                obj=repr(hmac_cache_alias),
                 id='django_hmac_authentication.E005',
+            )
+        )
+
+    # Check HMAC_AUTHENTICATION_SETTINGS in settings.py
+    auth_settings = getattr(settings, 'HMAC_AUTHENTICATION_SETTINGS', None)
+    if not auth_settings:
+        errors.append(
+            Error(
+                'Missing HMAC_AUTHENTICATION_SETTINGS in settings.py',
+                hint="https://github.com/harisankar-krishna-swamy/django_hmac_authentication#2-configuration",
+                obj=repr(auth_settings),
+                id='django_hmac_authentication.E006',
             )
         )
 
