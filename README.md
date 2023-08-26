@@ -6,7 +6,7 @@ Django hmac authentication with encrypted shared secrets
 # Features
 
 * Django model for HMAC's shared secret 
-* Each user's shared secret is protected with separate key. Each user can have many secrets
+* Each user can have many hmac shared secrets and each secret is protected with a separate key. 
 * Authentication class `HMACAuthentication` to use with Django Rest Framework 
 * Reject requests earlier than configured timeout and also with future timestamps 
 * Supports `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256`
