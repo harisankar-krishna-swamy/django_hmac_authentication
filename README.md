@@ -52,7 +52,8 @@ HMAC_AUTHENTICATION_SETTINGS = {
     'HMAC_EXPIRES_IN': '5m',
     # This cache alias must be defined in Django's CACHES. 
     # See https://docs.djangoproject.com/en/4.2/ref/settings/#caches
-    'HMAC_CACHE_ALIAS': 'hmac_cache'
+    'HMAC_CACHE_ALIAS': 'hmac_cache',
+    'ENABLE_UTC': True
 }
 
 INSTALLED_APPS = [
