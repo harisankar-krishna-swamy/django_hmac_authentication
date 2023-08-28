@@ -5,12 +5,13 @@ from unittest import mock
 from rest_framework.test import APIRequestFactory
 
 from django_hmac_authentication.exceptions import ExpiredKeyException
+from django_hmac_authentication.settings import get_tz
 from tests.testing_utils import TestHMACAuthenticationBase
 
 
 class TestExpiresIn(TestHMACAuthenticationBase):
     def test_hmac_authentication__expires_in(self):
-        initial_time = datetime.now(timezone.utc)
+        initial_time = datetime.now(get_tz())
         test_expires_at = initial_time - timedelta(days=1)
         self.hmac_key.expires_at = test_expires_at
         self.hmac_key.save()

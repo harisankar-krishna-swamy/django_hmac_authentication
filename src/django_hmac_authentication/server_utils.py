@@ -11,7 +11,7 @@ from rest_framework.exceptions import ValidationError
 
 from django_hmac_authentication.aes import aes_crypt
 from django_hmac_authentication.models import ApiHMACKey
-from django_hmac_authentication.settings import setting_for
+from django_hmac_authentication.settings import get_tz, setting_for
 
 encoding = 'utf-8'
 hash_func = 'sha256'
@@ -45,7 +45,7 @@ def aes_decrypt_hmac_secret(encrypted: bytes, salt: bytes) -> bytes:
 def create_shared_secret_for_user(user: user_model):
     expires_at = None
     if hmac_expires_in:
-        expires_at = datetime.now(timezone.utc) + timedelta_from_config(hmac_expires_in)
+        expires_at = datetime.now(get_tz()) + timedelta_from_config(hmac_expires_in)
 
     n_user_hmacs = ApiHMACKey.objects.filter(user=user).count()
     if n_user_hmacs >= max_hmacs_per_user:
@@ -62,7 +62,6 @@ def create_shared_secret_for_user(user: user_model):
 
 
 def timedelta_from_config(expires_in: str):
-
     if not expires_in or not isinstance(expires_in, str) or not len(expires_in) >= 2:
         raise TypeError(expires_in_config_err)
 

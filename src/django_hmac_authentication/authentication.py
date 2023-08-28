@@ -20,7 +20,7 @@ from django_hmac_authentication.server_utils import (
     aes_decrypt_hmac_secret,
     get_api_hmac_key,
 )
-from django_hmac_authentication.settings import setting_for
+from django_hmac_authentication.settings import get_tz, setting_for
 
 auth_req_timeout = setting_for('HMAC_AUTH_REQUEST_TIMEOUT')
 failed_attempts_threshold = setting_for('HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD')
@@ -72,10 +72,15 @@ class HMACAuthentication(authentication.BaseAuthentication):
         if auth_method not in self.authentication_methods:
             raise UnsupportedHMACMethodException(hmac_method=auth_method)
 
-        utcnow = datetime.datetime.now(timezone.utc)
+        tz = get_tz()
+        utcnow = datetime.datetime.now(tz)
 
         try:
-            req_utc = datetime.datetime.fromisoformat(date_in)
+            req_utc = (
+                datetime.datetime.fromisoformat(date_in)
+                .astimezone(tz=tz)
+                .replace(tzinfo=tz)
+            )
         except ValueError:
             raise DateFormatException()
 

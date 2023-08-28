@@ -9,7 +9,7 @@ from freezegun import freeze_time
 
 from django_hmac_authentication.models import ApiHMACKey
 from django_hmac_authentication.server_utils import timedelta_from_config
-from django_hmac_authentication.settings import setting_for
+from django_hmac_authentication.settings import get_tz, setting_for
 from tests.factories import ApiHMACKeyUserFactory
 
 
@@ -52,7 +52,7 @@ class TestMgmtCmdCreateHMACForUser(TestCase):
 
     def test__expires_in(self):
         expires_in = '1h'
-        initial_datetime = datetime.now(timezone.utc)
+        initial_datetime = datetime.now(get_tz())
         with mock.patch(
             'django_hmac_authentication.server_utils.hmac_expires_in',
             expires_in,

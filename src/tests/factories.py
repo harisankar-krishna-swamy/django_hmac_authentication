@@ -10,6 +10,7 @@ from factory.django import DjangoModelFactory
 
 from django_hmac_authentication.models import ApiHMACKey
 from django_hmac_authentication.server_utils import aes_encrypted_hmac_secret
+from django_hmac_authentication.settings import get_tz
 
 user_model = get_user_model()
 test_password = secrets.token_hex()
@@ -49,7 +50,7 @@ class ApiHMACKeyFactory(DjangoModelFactory):
     secret = base64.b64encode(test_encrypted).decode('utf-8')
     revoked = False
     failed_attempts = 0
-    expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
+    expires_at = datetime.now(get_tz()) + timedelta(minutes=5)
 
 
 class ApiHMACKeyWithMaxFailedAttemptsFactory(ApiHMACKeyFactory):

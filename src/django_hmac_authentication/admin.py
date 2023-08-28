@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from django.contrib import admin
 
 from django_hmac_authentication.models import ApiHMACKey
+from django_hmac_authentication.settings import get_tz
 
 
 class AdminApiHMACKey(admin.ModelAdmin):
@@ -38,7 +39,7 @@ class AdminApiHMACKey(admin.ModelAdmin):
     def expired(self, obj):
         if not obj.expires_at:
             return False
-        return obj.expires_at <= datetime.now(tz=timezone.utc)
+        return obj.expires_at <= datetime.now(tz=get_tz())
 
 
 admin.site.register(ApiHMACKey, AdminApiHMACKey)

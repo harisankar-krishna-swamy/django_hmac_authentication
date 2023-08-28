@@ -1,3 +1,5 @@
+from datetime import timezone
+
 from django.conf import settings
 
 DEFAULTS = {
@@ -7,6 +9,7 @@ DEFAULTS = {
     'HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD': None,
     'HMAC_EXPIRES_IN': None,
     'HMAC_CACHE_ALIAS': None,
+    'ENABLE_UTC': True,
 }
 
 NAMES = set(DEFAULTS.keys())
@@ -27,3 +30,9 @@ def setting_for(name: str):
         val = DEFAULTS[name]
 
     return val
+
+
+def get_tz():
+    tz = timezone.utc if setting_for("ENABLE_UTC") else None
+
+    return tz
