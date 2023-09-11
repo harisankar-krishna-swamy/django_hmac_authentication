@@ -46,3 +46,8 @@ class DateFormatException(AuthenticationFailed):
 class ExpiredKeyException(AuthenticationFailed):
     default_detail = _('Key has expired.')
     default_code = 'expired_key'
+
+
+class KeyKillSwitchException(AuthenticationFailed):
+    default_detail = _('Key kill switch turned on.')
+    default_code = 'key_kill_switch'

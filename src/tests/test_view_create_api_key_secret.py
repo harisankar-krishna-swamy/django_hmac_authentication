@@ -34,8 +34,6 @@ class TestViewCreateApiKey(TestCase):
         self._assert_http_ok_key_reponse(response)
 
     def test_view__max_keys_per_user(self):
-        pass
-
         max_hmacs = setting_for('MAX_HMACS_PER_USER')
         for i in range(0, max_hmacs + 1):
             data = {'username': self.user.username, 'password': test_password}

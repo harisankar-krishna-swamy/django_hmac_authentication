@@ -96,4 +96,17 @@ def check_configuration(**kwargs):
             )
         )
 
+    # Check HMAC_KILL_SWITCH
+    kill_switch_on = setting_for('HMAC_KILL_SWITCH')
+    if kill_switch_on:
+        if not hmac_cache_alias and hmac_cache_alias not in settings.CACHES:
+            errors.append(
+                Error(
+                    'HMAC_KILL_SWITCH is enabled. HMAC_CACHE_ALIAS must be configured for kill switch feature',
+                    hint="Set HMAC_CACHE_ALIAS to a cache in settings.py CACHES",
+                    obj=repr(kill_switch_on),
+                    id='django_hmac_authentication.E007',
+                )
+            )
+
     return errors
