@@ -4,8 +4,7 @@ from itertools import islice
 from pymemcache.client.hash import HashClient
 
 servers = [
-    '127.0.0.1:11211',
-    # Add memcached host:port here
+    # List memcached host:port here, Example: '127.0.0.1:11211',
 ]
 client = HashClient(servers, timeout=86400 * 30)
 
@@ -19,8 +18,6 @@ def turn_hmac_kill_switch(turn_on: bool, key_ids: list):
     else:
         client.delete_many(cache_keys)
 
-    print(client.get_many(cache_keys))
-
 
 def process_file(file_abspath: str, turn_on: bool):
     with open(file_abspath, 'r') as f:
@@ -29,10 +26,14 @@ def process_file(file_abspath: str, turn_on: bool):
 
 
 parser = argparse.ArgumentParser(
-    description='Turn hmac kill switch on/off for key ids listed in a file. List ids of '
-    'hmac keys per line in a file and run command'
+    description='Turn hmac kill switch on/off for key ids listed in a file.'
 )
-parser.add_argument('--abspath', type=str, required=True)
+parser.add_argument(
+    '--abspath',
+    type=str,
+    required=True,
+    help='Absolute path of file with hmac key ids, one per line',
+)
 parser.add_argument('--switch', type=str, required=True, choices=('on', 'off'))
 
 args = parser.parse_args()
