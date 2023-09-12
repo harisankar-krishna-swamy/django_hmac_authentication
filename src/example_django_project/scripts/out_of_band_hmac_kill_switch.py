@@ -4,13 +4,19 @@ from itertools import islice
 from pymemcache.client.hash import HashClient
 
 servers = [
-    # List memcached host:port here, Example: '127.0.0.1:11211',
+    # 1. List memcached host:port here, Example: '127.0.0.1:11211',
 ]
 client = HashClient(servers, timeout=86400 * 30)
 
+# 2. Change as in settings CACHE for alias (Django cache keys are formatted with prefix and version)
+key_prefix = ''
+version = 1
+
 
 def turn_hmac_kill_switch(turn_on: bool, key_ids: list):
-    cache_keys = [f'HMAC_KILL_SWITCH__{id.strip()}' for id in key_ids]
+    cache_keys = [
+        f'{key_prefix}:{version}:HMAC_KILL_SWITCH__{id.strip()}' for id in key_ids
+    ]
     if turn_on:
         failed = client.set_many(dict((key, True) for key in cache_keys))
         if failed:
