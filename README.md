@@ -44,7 +44,7 @@ Optional settings:
 * `HMAC_KILL_SWITCH` If set, enables checking cache to force-reject requests for certain keys. 
    The cache specified by `HMAC_CACHE_ALIAS` is used.   
    > Note: The hmac keys in this package can be disabled and enabled using the admin interface (through db). This switch
-     helps when that option cannot be availed. See `example_project/scripts/out_of_band_hmac_kill_switch.py` for a sample 
+     helps when that option cannot be availed. See `example_django_project/scripts/out_of_band_hmac_kill_switch.py` for a sample 
      out-of-band program that demonstrates using the switch and the cache key format. 
 
 Example
