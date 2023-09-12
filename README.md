@@ -1,7 +1,7 @@
 # django_hmac_authentication
 Django hmac authentication with encrypted shared secrets
 
-> :rocket: :rocket: Built on Debian, KDE and CI/CD on GitLab :penguin: :rocket: :rocket: 
+> :rocket: :rocket: Built on Debian, KDE and CI/CD on GitLab :penguin: :penguin: :rocket: :rocket: 
 
 # Features
 
