@@ -38,6 +38,7 @@ class TestSettings(TestCase):
             'HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD': 10,
             'HMAC_EXPIRES_IN': '2h',
             'HMAC_CACHE_ALIAS': 'alias',
+            'HMAC_KILL_SWITCH': True,
         }
         setattr(settings, 'HMAC_AUTHENTICATION_SETTINGS', overrides)
 

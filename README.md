@@ -1,7 +1,7 @@
 # django_hmac_authentication
 Django hmac authentication with encrypted shared secrets
 
-> :rocket: :rocket: Built on Debian, KDE and CI/CD on GitLab :penguin: :rocket: :rocket: 
+> :rocket: :rocket: Built on Debian, KDE and CI/CD on GitLab :penguin: :penguin: :rocket: :rocket: 
 
 # Features
 
@@ -18,7 +18,7 @@ Django hmac authentication with encrypted shared secrets
 * A lru_cache is enabled locally to save compute time to decode hmac keys
 
 ### What's new
-* From v2.0.0 configuration is namespaced in a dict. See configuration below.
+* An out-of-band capability to reject requests (reject/kill switch). See configuration below.
 
 # 1. Install
 `pip install django_hmac_authentication`
@@ -41,6 +41,13 @@ Optional settings:
 
 * `HMAC_CACHE_ALIAS` Alias of a cache backend in Django's `CACHES` settings. When set, the cache specified by the alias 
    is used to cache hmac keys. Example: `hmac_cache`. Default: None (i.e caching disabled)
+* `HMAC_KILL_SWITCH` If set, enables checking cache to force-reject requests for certain keys. 
+   The cache specified by `HMAC_CACHE_ALIAS` is used.   
+   > Note: The hmac keys in this package can be disabled and enabled using the admin interface (i.e through db). This switch
+     helps when that option is not feasible and out of band intervention is needed.   
+     See `example_django_project/scripts/out_of_band_hmac_kill_switch.py` for a sample     program that demonstrates switching keys on/off. 
+     Depending on cache backend used and CACHES configuration in settings.py, the cache key needs to formatted. 
+     [See Django cache key formatting based on configuration](https://github.com/django/django/blob/64cea1e48f285ea2162c669208d95188b32bbc82/django/core/cache/backends/base.py#L32)   
 
 Example
 ```python
@@ -52,7 +59,8 @@ HMAC_AUTHENTICATION_SETTINGS = {
     'HMAC_EXPIRES_IN': '5m',
     # This cache alias must be defined in Django's CACHES. 
     # See https://docs.djangoproject.com/en/4.2/ref/settings/#caches
-    'HMAC_CACHE_ALIAS': 'hmac_cache'
+    'HMAC_CACHE_ALIAS': 'hmac_cache',
+    'HMAC_KILL_SWITCH': True
 }
 
 INSTALLED_APPS = [
