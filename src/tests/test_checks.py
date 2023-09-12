@@ -23,23 +23,23 @@ class TestChecks(TestCase):
         )
         setattr(settings, name, orig_value)
 
-    def _test_configuration(self, name, value, error_id):
+    def _test_configuration(self, updates, error_id):
         from django.conf import settings
 
         hmac_settings = copy.deepcopy(DEFAULTS)
-        hmac_settings.update({name: value})
+        hmac_settings.update(updates)
         orig_value = getattr(settings, 'HMAC_AUTHENTICATION_SETTINGS', None)
         setattr(settings, 'HMAC_AUTHENTICATION_SETTINGS', hmac_settings)
         errors = check_configuration()
         if not error_id:
             self.assertTrue(
-                len(errors) == 0, f'Valid config {name} = {value} must not raise errors'
+                len(errors) == 0, f'Valid config {updates} must not raise errors'
             )
         else:
             self.assertEqual(
                 errors[-1].id,
                 error_id,
-                f'Incorrect config {name} = {value} must raise errors',
+                f'Incorrect config {updates} must raise errors',
             )
         setattr(settings, 'HMAC_AUTHENTICATION_SETTINGS', orig_value)
 
@@ -57,7 +57,7 @@ class TestChecks(TestCase):
         value=0,
         error_id='django_hmac_authentication.E001',
     ):
-        self._test_configuration(name, value, error_id)
+        self._test_configuration({name: value}, error_id)
 
     @data(
         ('HMAC_AUTH_REQUEST_TIMEOUT', None, 'django_hmac_authentication.E002'),
@@ -73,7 +73,7 @@ class TestChecks(TestCase):
         value=None,
         error_id='django_hmac_authentication.E002',
     ):
-        self._test_configuration(name, value, error_id)
+        self._test_configuration({name: value}, error_id)
 
     @data(
         ('HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD', 0, 'django_hmac_authentication.E003'),
@@ -88,7 +88,7 @@ class TestChecks(TestCase):
         value=0,
         error_id='django_hmac_authentication.E003',
     ):
-        self._test_configuration(name, value, error_id)
+        self._test_configuration({name: value}, error_id)
 
     @data(
         ('HMAC_EXPIRES_IN', None, None),
@@ -104,7 +104,7 @@ class TestChecks(TestCase):
         value=None,
         error_id=None,
     ):
-        self._test_configuration(name, value, error_id)
+        self._test_configuration({name: value}, error_id)
 
     @data(
         ('HMAC_CACHE_ALIAS', None, None),
@@ -117,4 +117,22 @@ class TestChecks(TestCase):
         value=None,
         error_id=None,
     ):
-        self._test_configuration(name, value, error_id)
+        self._test_configuration({name: value}, error_id)
+
+    @data(
+        ('HMAC_KILL_SWITCH', None, None),
+        ('HMAC_KILL_SWITCH', True, 'django_hmac_authentication.E007'),
+    )
+    @unpack
+    def test_configuration__HMAC_KILL_SWITCH(
+        self,
+        name='HMAC_KILL_SWITCH',
+        value=None,
+        error_id=None,
+    ):
+        self._test_configuration({name: value}, error_id)
+
+    def test_configuration__HMAC_KILL_SWITCH__with__HMAC_CACHE_ALIAS(self):
+        self._test_configuration(
+            {'HMAC_KILL_SWITCH': True, 'HMAC_CACHE_ALIAS': 'default'}, None
+        )

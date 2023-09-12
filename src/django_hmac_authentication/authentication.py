@@ -18,6 +18,7 @@ from django_hmac_authentication.exceptions import (
 )
 from django_hmac_authentication.server_utils import (
     aes_decrypt_hmac_secret,
+    check_key_for_kill_switch,
     get_api_hmac_key,
 )
 from django_hmac_authentication.settings import setting_for
@@ -25,6 +26,7 @@ from django_hmac_authentication.settings import setting_for
 auth_req_timeout = setting_for('HMAC_AUTH_REQUEST_TIMEOUT')
 failed_attempts_threshold = setting_for('HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD')
 hmac_expires_in = setting_for('HMAC_EXPIRES_IN')
+hmac_kill_switch_on = setting_for('HMAC_KILL_SWITCH')
 
 
 class HMACAuthentication(authentication.BaseAuthentication):
@@ -64,6 +66,9 @@ class HMACAuthentication(authentication.BaseAuthentication):
             return None
 
         auth_method, key, signature, date_in = self.parse_authorization_header(auth_hdr)
+
+        if hmac_kill_switch_on:
+            check_key_for_kill_switch(key)
 
         if not auth_method or not key or not signature or not date_in:
             return None

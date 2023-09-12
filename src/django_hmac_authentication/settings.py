@@ -7,6 +7,7 @@ DEFAULTS = {
     'HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD': None,
     'HMAC_EXPIRES_IN': None,
     'HMAC_CACHE_ALIAS': None,
+    'HMAC_KILL_SWITCH': False,
 }
 
 NAMES = set(DEFAULTS.keys())

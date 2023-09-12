@@ -10,6 +10,7 @@ from django.core.cache import caches
 from rest_framework.exceptions import ValidationError
 
 from django_hmac_authentication.aes import aes_crypt
+from django_hmac_authentication.exceptions import KeyKillSwitchException
 from django_hmac_authentication.models import ApiHMACKey
 from django_hmac_authentication.settings import setting_for
 
@@ -93,3 +94,11 @@ def get_api_hmac_key(key_id):
         return hmac_key
     else:
         return ApiHMACKey.objects.filter(id=key_id).first()
+
+
+def check_key_for_kill_switch(key_id):
+    if not key_id:
+        return
+    switched_on = caches[hmac_cache_alias].get(f'HMAC_KILL_SWITCH__{key_id}')
+    if switched_on:
+        raise KeyKillSwitchException()
