@@ -18,7 +18,7 @@ Django hmac authentication with encrypted shared secrets
 * A lru_cache is enabled locally to save compute time to decode hmac keys
 
 ### What's new
-* An out-of-band capability to reject requests (hmac key reject/kill switch). See configuration below.
+* An out-of-band capability to reject requests (reject/kill switch). See configuration below.
 
 # 1. Install
 `pip install django_hmac_authentication`
