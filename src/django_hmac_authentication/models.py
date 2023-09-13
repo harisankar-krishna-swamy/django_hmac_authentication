@@ -11,7 +11,7 @@ user_model = settings.AUTH_USER_MODEL
 
 throttle_rate_validator = RegexValidator(
     regex=r'^(\d+)(\/)(min|minute|day|second|sec)$',
-    message='Throttle rate must be of form number/unit. Examples: 100/second, 100/sec, 200/minute 200/min 500/day',
+    message='Throttle rate must be formatted as a number/unit. Examples: 100/second, 100/sec, 200/minute 200/min 500/day',
     code='Invalid throttle rate',
 )
 
