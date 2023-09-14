@@ -1,0 +1,40 @@
+from http import HTTPStatus
+
+from rest_framework.test import APIRequestFactory
+
+from django_hmac_authentication.throttling import HMACApiKeyRateThrottle
+from tests.testing_utils import TestHMACAuthenticationBase
+
+
+class ThrottlingTests(TestHMACAuthenticationBase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.view.throttle_classes = (HMACApiKeyRateThrottle,)
+        self.throttle_rate = 10
+        self.hmac_key.throttle_rate = f'{self.throttle_rate}/day'
+        self.hmac_key.save()
+        self.hmac_key.refresh_from_db()
+
+    def test__throttling(self):
+        factory = APIRequestFactory()
+        req_data = ''
+        signature, utc_8601 = self._request_auth_header_fields(req_data, 'HMAC-SHA512')
+        headers = {
+            f'{self.auth_header}': f'HMAC-SHA512 {self.hmac_key.id};{signature};{utc_8601}',
+            'Content-Type': 'application/json',
+        }
+
+        request = factory.get('/', data=None, **headers)
+        for i in range(self.throttle_rate):
+            response = self.view(request)
+            self.assertEqual(
+                response.status_code,
+                HTTPStatus.OK,
+                'Requests within throttle rate must succeed',
+            )
+        response = self.view(request)
+        self.assertEqual(
+            response.status_code,
+            HTTPStatus.TOO_MANY_REQUESTS,
+            'Requests exceeding throttle rate must return with HTTP 429',
+        )
