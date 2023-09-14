@@ -53,8 +53,7 @@ Optional settings:
 * `Throttling requests on hmac key` with `django_hmac_authentication.throttling.HMACApiKeyRateThrottle`.  
   Throttling uses cache and `HMAC_CACHE_ALIAS` must be set. By default all hmac keys are created with rate 
   `200/min`. If throttling is configured then requests using a key will get throttled on that rate. Rate can be 
-  changed on admin. Throttling class must be set in `DEFAULT_THROTTLE_CLASSES`. A rate for `hmac_apikey` must be 
-  set in `DEFAULT_THROTTLE_RATES`. See example configuration below.
+  changed on admin. Throttling class must be set in `DEFAULT_THROTTLE_CLASSES`. See example configuration below.
 
 Example
 ```python
@@ -89,7 +88,6 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_CLASSES': [
         'django_hmac_authentication.throttling.HMACApiKeyRateThrottle'
     ],
-    'DEFAULT_THROTTLE_RATES': {'hmac_apikey': '100/minute', 'user': '1000/day'},
 }
 ```
 
