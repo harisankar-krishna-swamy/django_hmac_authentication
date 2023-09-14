@@ -48,13 +48,12 @@ HMAC_AUTHENTICATION_SETTINGS = {
     'HMAC_AUTH_REQUEST_TIMEOUT': 4,
     # Optional config
     'HMAC_EXPIRES_IN': '1h',
-    'HMAC_CACHE_ALIAS': 'default',
 }
 
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
-        'LOCATION': '127.0.0.1:11211',
+        'LOCATION': 'memcached:11211',
         'OPTIONS': {
             "no_delay": True,
             "ignore_exc": True,
@@ -72,10 +71,6 @@ REST_FRAMEWORK = {
         'django_hmac_authentication.authentication.HMACAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
-    'DEFAULT_THROTTLE_CLASSES': [
-        'django_hmac_authentication.throttling.HMACApiKeyRateThrottle'
-    ],
-    'DEFAULT_THROTTLE_RATES': {'hmac_apikey': '100/minute', 'user': '1000/day'},
 }
 
 MIDDLEWARE = [
