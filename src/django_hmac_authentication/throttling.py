@@ -1,4 +1,5 @@
 import time
+from functools import lru_cache
 
 from django.core.cache import caches
 from rest_framework.throttling import BaseThrottle
@@ -8,6 +9,16 @@ from django_hmac_authentication.server_utils import (
     parse_authorization_header,
 )
 from django_hmac_authentication.settings import setting_for
+
+
+@lru_cache(maxsize=100)
+def parse_rate(rate):
+    if rate is None:
+        return (None, None)
+    num, period = rate.split('/')
+    num_requests = int(num)
+    duration = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}[period[0]]
+    return num_requests, duration
 
 
 class HMACApiKeyRateThrottle(BaseThrottle):
@@ -32,7 +43,7 @@ class HMACApiKeyRateThrottle(BaseThrottle):
         if hmac_key:
             self.rate = hmac_key.throttle_rate
 
-        self.num_requests, self.duration = self.parse_rate(self.rate)
+        self.num_requests, self.duration = parse_rate(self.rate)
 
         self.key = f'throttle_hmack_api_key_{key_id}'
 
@@ -49,14 +60,6 @@ class HMACApiKeyRateThrottle(BaseThrottle):
         self.history.insert(0, self.now)
         self.cache.set(self.key, self.history, self.duration)
         return True
-
-    def parse_rate(self, rate):
-        if rate is None:
-            return (None, None)
-        num, period = rate.split('/')
-        num_requests = int(num)
-        duration = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}[period[0]]
-        return (num_requests, duration)
 
     def wait(self):
         """

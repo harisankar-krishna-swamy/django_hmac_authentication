@@ -1,7 +1,7 @@
 from ddt import data, ddt, unpack
 from rest_framework.test import APITestCase
 
-from django_hmac_authentication.authentication import HMACAuthentication
+from django_hmac_authentication.server_utils import parse_authorization_header
 
 test_data__authorization_header_parsing_invalid = (
     # invalid header structures for authorization header content
@@ -20,8 +20,6 @@ test_data__authorization_header_parsing_valid = (
 
 @ddt
 class TestAuthorizationHeaderParsing(APITestCase):
-    def setUp(self) -> None:
-        self.auth = HMACAuthentication()
 
     test_data__authorization_header_parsing = (
         *test_data__authorization_header_parsing_invalid,
@@ -33,7 +31,7 @@ class TestAuthorizationHeaderParsing(APITestCase):
     def test_hmac_authentication_authorization_header_parsing(
         self, header=None, valid_header=False
     ):
-        header_parts = self.auth.parse_authorization_header(header)
+        header_parts = parse_authorization_header(header)
         for part in header_parts:
             if not valid_header:
                 self.assertIsNone(
