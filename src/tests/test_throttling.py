@@ -4,14 +4,13 @@ from http import HTTPStatus
 from rest_framework.test import APIRequestFactory
 
 from django_hmac_authentication.settings import DEFAULTS
-from django_hmac_authentication.throttling import HMACApiKeyRateThrottle
-from tests.testing_utils import TestHMACAuthenticationBase
+from tests.testing_utils import TestHMACAuthenticationBase, TestThrottleView
 
 
 class ThrottlingTests(TestHMACAuthenticationBase):
     def setUp(self) -> None:
         super().setUp()
-        self.view.view_class.throttle_classes = (HMACApiKeyRateThrottle,)
+        self.view = TestThrottleView.as_view()
         self.throttle_rate = 10
         self.hmac_key.throttle_rate = f'{self.throttle_rate}/day'
         self.hmac_key.save()
