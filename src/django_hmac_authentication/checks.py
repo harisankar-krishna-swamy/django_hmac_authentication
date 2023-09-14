@@ -3,6 +3,8 @@ from django.core.checks import Error
 
 
 def check_configuration(**kwargs):
+    from django.conf import settings as django_settings
+
     from django_hmac_authentication.server_utils import timedelta_from_config
     from django_hmac_authentication.settings import setting_for
 
@@ -109,4 +111,21 @@ def check_configuration(**kwargs):
                 )
             )
 
+    # if throttling is added then HMAC_CACHE_ALIAS must be set
+    drf_settings = django_settings.REST_FRAMEWORK
+    throttle_classes = drf_settings.get('DEFAULT_THROTTLE_CLASSES')
+    throttle_rates = drf_settings.get('DEFAULT_THROTTLE_RATES')
+    throttle_enabled = any('HMACApiKeyRateThrottle' in tc for tc in throttle_classes)
+    if throttle_enabled:
+        try:
+            throttle_rates['hmac_apikey']
+        except KeyError:
+            errors.append(
+                Error(
+                    '"hmac_apikey" throttle rate must be configured in DRF DEFAULT_THROTTLE_RATES',
+                    hint="Set hmac_apikey in settings.py -> REST_FRAMEWORK -> DEFAULT_THROTTLE_RATES",
+                    obj=repr('hmac_api_key'),
+                    id='django_hmac_authentication.E008',
+                )
+            )
     return errors

@@ -1,4 +1,5 @@
 from django.core.cache import caches
+from django.core.exceptions import ImproperlyConfigured
 from rest_framework.throttling import SimpleRateThrottle
 
 from django_hmac_authentication.server_utils import (
@@ -8,6 +9,12 @@ from django_hmac_authentication.server_utils import (
 from django_hmac_authentication.settings import setting_for
 
 hmac_cache_alias = setting_for('HMAC_CACHE_ALIAS')
+if not hmac_cache_alias:
+    raise ImproperlyConfigured(
+        'HMAC_CACHE_ALIAS must be configured for throttling on HMAC key'
+    )
+
+throttle_cache = caches[hmac_cache_alias]
 
 
 class HMACApiKeyRateThrottle(SimpleRateThrottle):
@@ -17,7 +24,7 @@ class HMACApiKeyRateThrottle(SimpleRateThrottle):
     authenticated.
     """
 
-    cache = caches[hmac_cache_alias]
+    cache = throttle_cache
     scope = 'hmac_apikey'
 
     def allow_request(self, request, view):
