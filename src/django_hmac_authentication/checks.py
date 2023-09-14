@@ -114,7 +114,6 @@ def check_configuration(**kwargs):
     # if throttling is added then HMAC_CACHE_ALIAS must be set
     drf_settings = django_settings.REST_FRAMEWORK
     throttle_classes = drf_settings.get('DEFAULT_THROTTLE_CLASSES')
-    throttle_rates = drf_settings.get('DEFAULT_THROTTLE_RATES')
     throttle_enabled = throttle_classes and any(
         'HMACApiKeyRateThrottle' in tc for tc in throttle_classes
     )
@@ -126,17 +125,6 @@ def check_configuration(**kwargs):
                     hint="Set HMAC_CACHE_ALIAS in HMAC_AUTHENTICATION_SETTINGS to a valid cache in settings.py CACHES",
                     obj=repr('HMAC_CACHE_ALIAS'),
                     id='django_hmac_authentication.E008',
-                )
-            )
-        try:
-            throttle_rates['hmac_apikey']
-        except (KeyError, TypeError):
-            errors.append(
-                Error(
-                    '"hmac_apikey" throttle rate must be configured in DRF DEFAULT_THROTTLE_RATES',
-                    hint="Set hmac_apikey in settings.py -> REST_FRAMEWORK -> DEFAULT_THROTTLE_RATES",
-                    obj=repr('hmac_api_key'),
-                    id='django_hmac_authentication.E009',
                 )
             )
     return errors
