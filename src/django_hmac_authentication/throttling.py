@@ -45,14 +45,17 @@ class HMACApiKeyRateThrottle(BaseThrottle):
 
         self.num_requests, self.duration = parse_rate(self.rate)
 
-        self.key = f'throttle_hmack_api_key_{key_id}'
+        self.key = f'throttle_hmac_api_key_{key_id}'
 
         self.history = self.cache.get(self.key, [])
         self.now = time.time()
 
+        # for this moment when did duration start
+        duration_cut_off = self.now - self.duration
+
         # Drop any requests from the history which have now passed the
         # throttle duration
-        while self.history and self.history[-1] <= self.now - self.duration:
+        while self.history and self.history[-1] <= duration_cut_off:
             self.history.pop()
         if len(self.history) >= self.num_requests:
             return False
