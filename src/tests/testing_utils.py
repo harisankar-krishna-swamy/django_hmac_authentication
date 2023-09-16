@@ -8,10 +8,11 @@ from rest_framework.views import APIView
 from django_hmac_authentication.authentication import HMACAuthentication
 from django_hmac_authentication.client_utils import prepare_string_to_sign, sign_string
 from django_hmac_authentication.server_utils import aes_decrypt_hmac_secret
+from django_hmac_authentication.throttling import HMACApiKeyRateThrottle
 from tests.factories import ApiHMACKeyFactory, ApiHMACKeyUserFactory
 
 
-class TestView(APIView):
+class TestAuthenticationView(APIView):
     authentication_classes = (HMACAuthentication,)
 
     def get(self, request):
@@ -30,6 +31,14 @@ class TestView(APIView):
         return Response(data={'method': 'DELETE'})
 
 
+class TestThrottleView(APIView):
+    authentication_classes = (HMACAuthentication,)
+    throttle_classes = (HMACApiKeyRateThrottle,)
+
+    def get(self, request):
+        return Response(data={'method': 'GET'})
+
+
 class TestHMACAuthenticationBase(APITestCase):
     def setUp(self) -> None:
         self.user = ApiHMACKeyUserFactory()
@@ -38,7 +47,7 @@ class TestHMACAuthenticationBase(APITestCase):
         self.enc_salt = base64.b64decode(self.hmac_key.salt.encode('utf-8'))
         self.auth = HMACAuthentication()
         self.auth_header = 'HTTP_AUTHORIZATION'
-        self.view = TestView.as_view()
+        self.view = TestAuthenticationView.as_view()
 
     def _assert_response_error_detail(self, resp_data, exc):
         detail, code = resp_data.get('detail'), resp_data.get('detail').code

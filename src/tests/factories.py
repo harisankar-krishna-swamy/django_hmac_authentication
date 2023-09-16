@@ -50,6 +50,7 @@ class ApiHMACKeyFactory(DjangoModelFactory):
     revoked = False
     failed_attempts = 0
     expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
+    throttle_rate = '1/day'
 
 
 class ApiHMACKeyWithMaxFailedAttemptsFactory(ApiHMACKeyFactory):

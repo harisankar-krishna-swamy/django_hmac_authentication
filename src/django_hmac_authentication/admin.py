@@ -21,7 +21,15 @@ class AdminApiHMACKey(admin.ModelAdmin):
         'user',
         'id',
     )
-    fields = ('created_at', 'modified_on', 'user', 'id', 'revoked', 'expires_at')
+    fields = (
+        'created_at',
+        'modified_on',
+        'user',
+        'id',
+        'revoked',
+        'expires_at',
+        'throttle_rate',
+    )
     readonly_fields = (
         'user',
         'id',
