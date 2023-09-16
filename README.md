@@ -52,8 +52,7 @@ Optional settings:
      [See Django cache key formatting based on configuration](https://github.com/django/django/blob/64cea1e48f285ea2162c669208d95188b32bbc82/django/core/cache/backends/base.py#L32)   
 * `Throttling requests on hmac key` with `django_hmac_authentication.throttling.HMACApiKeyRateThrottle`.  
   Throttling uses cache and `HMAC_CACHE_ALIAS` must be set. By default all hmac keys are created with rate 
-  `200/min`. If throttling is configured then requests using a key will get throttled on that rate. Rate can be 
-  changed on admin. Throttling class must be set in `DEFAULT_THROTTLE_CLASSES`. See example configuration below.
+  `200/min`. Rate can be changed on admin. Set throttling class in `DEFAULT_THROTTLE_CLASSES` as shown in example below.
 
 Example
 ```python
