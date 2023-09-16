@@ -20,6 +20,7 @@ from django_hmac_authentication.server_utils import (
     aes_decrypt_hmac_secret,
     check_key_for_kill_switch,
     get_api_hmac_key,
+    parse_authorization_header,
 )
 from django_hmac_authentication.settings import setting_for
 
@@ -31,22 +32,6 @@ hmac_kill_switch_on = setting_for('HMAC_KILL_SWITCH')
 
 class HMACAuthentication(authentication.BaseAuthentication):
     authentication_methods = {'HMAC-SHA512', 'HMAC-SHA384', 'HMAC-SHA256'}
-
-    def parse_authorization_header(self, content):
-        if not content:
-            return None, None, None, None
-        try:
-            auth_method, rest = content.split()
-            if not auth_method or not rest:
-                return None, None, None, None
-
-            api_key, signature, dt = rest.split(';')
-            if not api_key or not signature or not dt:
-                return None, None, None, None
-
-            return auth_method, api_key, signature, dt
-        except (AttributeError, ValueError):
-            return None, None, None, None
 
     def compute_request_signature(self, request, auth_method, date_in, hmac_key):
         enc_secret = base64.b64decode(hmac_key.secret.encode('utf-8'))
@@ -65,7 +50,7 @@ class HMACAuthentication(authentication.BaseAuthentication):
         if not auth_hdr:
             return None
 
-        auth_method, key, signature, date_in = self.parse_authorization_header(auth_hdr)
+        auth_method, key, signature, date_in = parse_authorization_header(auth_hdr)
 
         if hmac_kill_switch_on:
             check_key_for_kill_switch(key)

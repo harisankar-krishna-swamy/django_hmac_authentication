@@ -102,3 +102,21 @@ def check_key_for_kill_switch(key_id):
     switched_on = caches[hmac_cache_alias].get(f'HMAC_KILL_SWITCH__{key_id}')
     if switched_on:
         raise KeyKillSwitchException()
+
+
+@lru_cache(maxsize=100)
+def parse_authorization_header(content):
+    if not content:
+        return None, None, None, None
+    try:
+        auth_method, rest = content.split()
+        if not auth_method or not rest:
+            return None, None, None, None
+
+        api_key, signature, dt = rest.split(';')
+        if not api_key or not signature or not dt:
+            return None, None, None, None
+
+        return auth_method, api_key, signature, dt
+    except (AttributeError, ValueError):
+        return None, None, None, None

@@ -2,11 +2,18 @@
 import uuid
 
 from django.conf import settings
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.fields import DateTimeField
 from django.utils.translation import gettext_lazy as _
 
 user_model = settings.AUTH_USER_MODEL
+
+throttle_rate_validator = RegexValidator(
+    regex=r'^(\d+)(\/)(min|minute|day|second|sec)$',
+    message='Throttle rate must be formatted as a number/unit. Examples: 100/second, 100/sec, 200/minute 200/min, 500/day',
+    code='Invalid throttle rate',
+)
 
 
 class ApiHMACKey(models.Model):
@@ -24,6 +31,14 @@ class ApiHMACKey(models.Model):
     )
     expires_at = DateTimeField(
         _('Expires at'), default=None, null=True, db_index=True, editable=False
+    )
+    throttle_rate = models.CharField(
+        _('Throttle rate'),
+        max_length=15,
+        null=False,
+        blank=False,
+        default='200/min',
+        validators=[throttle_rate_validator],
     )
 
     def __str__(self):
