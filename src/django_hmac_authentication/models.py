@@ -40,6 +40,13 @@ class ApiHMACKey(models.Model):
         default='200/min',
         validators=[throttle_rate_validator],
     )
+    cipher_algorithm = models.CharField(
+        _('Cipher algorithm'),
+        max_length=24,
+        null=False,
+        editable=False,
+        default='AES-256',
+    )
 
     def __str__(self):
         return f'{self.user}'

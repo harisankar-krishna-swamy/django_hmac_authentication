@@ -17,10 +17,12 @@ Django hmac authentication with multiple encrypted secrets per user
 * Option to speedup using a cache in Django's `CACHES` settings.
 * A lru_cache is enabled locally to save compute time to decode hmac keys
 * An out-of-band capability to reject requests (kill switch)
+* Throttling requests on hmac key used in authentication
 
 ### What's new 
-
-Throttling requests on hmac key used in authentication.
+Camellia 256 cipher is added. Package picks one of AES-256 or Camellia-256 to
+secure user's HMAC secret at runtime. No change is needed at client side code.
+To use new feature just update package and run migrations. 
 
 # 1. Install
 `pip install django_hmac_authentication`
