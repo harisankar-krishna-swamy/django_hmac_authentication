@@ -8,12 +8,18 @@ from django.contrib.auth.hashers import make_password
 from django.db.models.signals import post_save
 from factory.django import DjangoModelFactory
 
+from django_hmac_authentication.crypt.settings import CIPHER_AES_256
 from django_hmac_authentication.models import ApiHMACKey
-from django_hmac_authentication.server_utils import aes_encrypted_hmac_secret
+from django_hmac_authentication.server_utils import cipher_encrypted_hmac_secret
 
 user_model = get_user_model()
 test_password = secrets.token_hex()
-test_hmac_secret, test_encrypted, test_enc_key, test_salt = aes_encrypted_hmac_secret()
+(
+    test_hmac_secret,
+    test_encrypted,
+    test_enc_key,
+    test_salt,
+) = cipher_encrypted_hmac_secret(CIPHER_AES_256)
 
 
 @factory.django.mute_signals(post_save)
@@ -51,6 +57,7 @@ class ApiHMACKeyFactory(DjangoModelFactory):
     failed_attempts = 0
     expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
     throttle_rate = '1/day'
+    cipher_algorithm = CIPHER_AES_256
 
 
 class ApiHMACKeyWithMaxFailedAttemptsFactory(ApiHMACKeyFactory):

@@ -1,84 +1,48 @@
+import base64
 from http import HTTPStatus
 
 from ddt import data, ddt, unpack
 from rest_framework.test import APIRequestFactory
 
+from django_hmac_authentication.authentication import HMACAuthentication
+from django_hmac_authentication.crypt.settings import SUPPORTED_CIPHERS
+from django_hmac_authentication.server_utils import cipher_encrypted_hmac_secret
+from tests.factories import ApiHMACKeyFactory
 from tests.testing_utils import TestHMACAuthenticationBase
 
-test_data__hmac_http_methods = (
-    # hmac-sha512
-    (
-        'HMAC-SHA512',
-        'GET',
-    ),
-    (
-        'HMAC-SHA512',
-        'POST',
-    ),
-    (
-        'HMAC-SHA512',
-        'PATCH',
-    ),
-    (
-        'HMAC-SHA512',
-        'PUT',
-    ),
-    (
-        'HMAC-SHA512',
-        'DELETE',
-    ),
-    # hmac-sha384
-    (
-        'HMAC-SHA384',
-        'GET',
-    ),
-    (
-        'HMAC-SHA384',
-        'POST',
-    ),
-    (
-        'HMAC-SHA384',
-        'PATCH',
-    ),
-    (
-        'HMAC-SHA384',
-        'PUT',
-    ),
-    (
-        'HMAC-SHA384',
-        'DELETE',
-    ),
-    # hmac-sha256
-    (
-        'HMAC-SHA256',
-        'GET',
-    ),
-    (
-        'HMAC-SHA256',
-        'POST',
-    ),
-    (
-        'HMAC-SHA256',
-        'PATCH',
-    ),
-    (
-        'HMAC-SHA256',
-        'PUT',
-    ),
-    (
-        'HMAC-SHA256',
-        'DELETE',
-    ),
-)
+HTTP_METHODS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE')
+
+test_data = []
+for http_method in HTTP_METHODS:
+    for auth_method in HMACAuthentication.authentication_methods:
+        for cipher_algorithm in SUPPORTED_CIPHERS:
+            test_data.append((auth_method, http_method, cipher_algorithm))
 
 
 @ddt
-class TestHttpMethods(TestHMACAuthenticationBase):
-    @data(*test_data__hmac_http_methods)
+class TestHMACAuthentication(TestHMACAuthenticationBase):
+    @data(*test_data)
     @unpack
     def test_api__hmac_authenticate__valid(
-        self, digest='HMAC-SHA512', http_method='POST'
+        self, digest='HMAC-SHA512', http_method='POST', cipher_algorithm='AES-256'
     ):
+        self.hmac_key.delete()
+        # build required hmac key
+        (
+            test_hmac_secret,
+            test_encrypted,
+            test_enc_key,
+            test_salt,
+        ) = cipher_encrypted_hmac_secret(cipher_algorithm)
+        self.hmac_key = ApiHMACKeyFactory(
+            user=self.user,
+            salt=base64.b64encode(test_salt).decode('utf-8'),
+            secret=base64.b64encode(test_encrypted).decode('utf-8'),
+            cipher_algorithm=cipher_algorithm,
+        )
+        self.enc_secret = base64.b64decode(self.hmac_key.secret.encode('utf-8'))
+        self.enc_salt = base64.b64decode(self.hmac_key.salt.encode('utf-8'))
+
         factory = APIRequestFactory()
         req_data = None
         if http_method in {'PUT', 'POST', 'PATCH'}:

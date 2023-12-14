@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 
 from django_hmac_authentication.authentication import HMACAuthentication
 from django_hmac_authentication.client_utils import prepare_string_to_sign, sign_string
-from django_hmac_authentication.server_utils import aes_decrypt_hmac_secret
+from django_hmac_authentication.server_utils import cipher_decrypt_hmac_secret
 from django_hmac_authentication.throttling import HMACApiKeyRateThrottle
 from tests.factories import ApiHMACKeyFactory, ApiHMACKeyUserFactory
 
@@ -63,7 +63,9 @@ class TestHMACAuthenticationBase(APITestCase):
         )
 
     def _request_auth_header_fields(self, req_data, digest):
-        secret = aes_decrypt_hmac_secret(self.enc_secret, self.enc_salt)
+        secret = cipher_decrypt_hmac_secret(
+            self.enc_secret, self.enc_salt, self.hmac_key.cipher_algorithm
+        )
         utc_8601 = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
         string_to_sign = prepare_string_to_sign(req_data, utc_8601, digest)
         signature = sign_string(string_to_sign, secret, digest)

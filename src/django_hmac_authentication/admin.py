@@ -29,6 +29,7 @@ class AdminApiHMACKey(admin.ModelAdmin):
         'revoked',
         'expires_at',
         'throttle_rate',
+        'cipher_algorithm',
     )
     readonly_fields = (
         'user',
@@ -36,6 +37,7 @@ class AdminApiHMACKey(admin.ModelAdmin):
         'created_at',
         'modified_on',
         'expires_at',
+        'cipher_algorithm',
     )
 
     @admin.display(description='active', boolean=True)
