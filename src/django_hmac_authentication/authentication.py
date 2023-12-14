@@ -17,8 +17,8 @@ from django_hmac_authentication.exceptions import (
     UnsupportedHMACMethodException,
 )
 from django_hmac_authentication.server_utils import (
-    aes_decrypt_hmac_secret,
     check_key_for_kill_switch,
+    cipher_decrypt_hmac_secret,
     get_api_hmac_key,
     parse_authorization_header,
 )
@@ -36,7 +36,9 @@ class HMACAuthentication(authentication.BaseAuthentication):
     def compute_request_signature(self, request, auth_method, date_in, hmac_key):
         enc_secret = base64.b64decode(hmac_key.secret.encode('utf-8'))
         enc_salt = base64.b64decode(hmac_key.salt.encode('utf-8'))
-        secret = aes_decrypt_hmac_secret(enc_secret, enc_salt)
+        secret = cipher_decrypt_hmac_secret(
+            enc_secret, enc_salt, hmac_key.cipher_algorithm
+        )
 
         data = getattr(request, 'data', None)
         string_to_sign = prepare_string_to_sign(data, date_in, auth_method)

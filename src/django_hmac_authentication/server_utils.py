@@ -1,5 +1,6 @@
 import base64
 import os
+import random
 import secrets
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
@@ -9,7 +10,9 @@ from django.conf import settings
 from django.core.cache import caches
 from rest_framework.exceptions import ValidationError
 
-from django_hmac_authentication.aes import aes_crypt
+from django_hmac_authentication.crypt.aes import aes_crypt
+from django_hmac_authentication.crypt.camellia import camellia_crypt
+from django_hmac_authentication.crypt.settings import CIPHER_AES_256, SUPPORTED_CIPHERS
 from django_hmac_authentication.exceptions import KeyKillSwitchException
 from django_hmac_authentication.models import ApiHMACKey
 from django_hmac_authentication.settings import setting_for
@@ -26,24 +29,33 @@ expires_in_config_err = 'expires_in config must be string. Example: 4h, 5m, 3600
 
 hmac_cache_alias = setting_for('HMAC_CACHE_ALIAS')
 
-# TODO: 3. The same function can generate 256 bit key for camellia too. rename
 
-
-def aes_encrypted_hmac_secret() -> tuple:
+def cipher_encrypted_hmac_secret(cipher_algorithm=CIPHER_AES_256) -> tuple:
     salt = os.urandom(24)
     iv = salt[-16:]
     enc_key = pbkdf2_hmac(hash_func, settings.SECRET_KEY.encode(encoding), salt, 1000)
 
     hmac_secret = secrets.token_bytes(32)
-    encrypted = aes_crypt(hmac_secret, enc_key, iv)
+    encrypted = (
+        aes_crypt(hmac_secret, enc_key, iv)
+        if cipher_algorithm == CIPHER_AES_256
+        else camellia_crypt(hmac_secret, enc_key, iv)
+    )
+
     return hmac_secret, encrypted, enc_key, salt
 
 
-# TODO: 2. Add camellia decrypt like this
 @lru_cache(maxsize=100)
-def aes_decrypt_hmac_secret(encrypted: bytes, salt: bytes) -> bytes:
+def cipher_decrypt_hmac_secret(
+    encrypted: bytes, salt: bytes, cipher_algorithm=CIPHER_AES_256
+) -> bytes:
     enc_key = pbkdf2_hmac(hash_func, settings.SECRET_KEY.encode(encoding), salt, 1000)
-    return aes_crypt(encrypted, enc_key, salt[-16:], False)
+
+    return (
+        aes_crypt(encrypted, enc_key, salt[-16:], False)
+        if cipher_algorithm == CIPHER_AES_256
+        else camellia_crypt(encrypted, enc_key, salt[-16:], False)
+    )
 
 
 def create_shared_secret_for_user(user: user_model):
@@ -54,13 +66,18 @@ def create_shared_secret_for_user(user: user_model):
     n_user_hmacs = ApiHMACKey.objects.filter(user=user).count()
     if n_user_hmacs >= max_hmacs_per_user:
         raise ValidationError('Maximum API secrets limit reached for user')
-    # TODO: 1. Pick algorithm to use here
-    hmac_secret, encrypted, enc_key, salt = aes_encrypted_hmac_secret()
+
+    cipher_index = random.randint(0, len(SUPPORTED_CIPHERS) - 1)
+    cipher_algorithm = SUPPORTED_CIPHERS[cipher_index]
+    hmac_secret, encrypted, enc_key, salt = cipher_encrypted_hmac_secret(
+        cipher_algorithm
+    )
     hmac_key = ApiHMACKey(
         user=user,
         secret=base64.b64encode(encrypted).decode('utf-8'),
         salt=base64.b64encode(salt).decode('utf-8'),
         expires_at=expires_at,
+        cipher_algorithm=cipher_algorithm,
     )
     hmac_key.save()
     return hmac_key.id, base64.b64encode(hmac_secret).decode('utf-8')

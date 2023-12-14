@@ -6,12 +6,12 @@ from unittest import mock
 from ddt import data, ddt, unpack
 from django.test import TestCase
 
-from django_hmac_authentication.aes import aes_crypt
-from django_hmac_authentication.camellia import camellia_crypt
 from django_hmac_authentication.client_utils import hash_content, sign_string
+from django_hmac_authentication.crypt.aes import aes_crypt
+from django_hmac_authentication.crypt.camellia import camellia_crypt
 from django_hmac_authentication.server_utils import (
-    aes_decrypt_hmac_secret,
-    aes_encrypted_hmac_secret,
+    cipher_decrypt_hmac_secret,
+    cipher_encrypted_hmac_secret,
     get_api_hmac_key,
     timedelta_from_config,
 )
@@ -20,11 +20,16 @@ from tests.factories import ApiHMACKeyFactory, ApiHMACKeyUserFactory
 
 @ddt
 class TestUtils(TestCase):
-    def test_match_hmac_secret(self):
-        hmac_secret, encrypted, enc_key, salt = aes_encrypted_hmac_secret()
-        decrypted = aes_decrypt_hmac_secret(encrypted, salt)
+    @data(('AES-256',), ('CAMELLIA-256',))
+    @unpack
+    def test_match_hmac_secret(self, cipher_algorithm='AES-256'):
+        hmac_secret, encrypted, enc_key, salt = cipher_encrypted_hmac_secret(
+            cipher_algorithm
+        )
+        decrypted = cipher_decrypt_hmac_secret(encrypted, salt, cipher_algorithm)
         self.assertTrue(
-            hmac_secret == decrypted, 'Decrypted secret did not match original'
+            hmac_secret == decrypted,
+            f'Decrypted secret did not match original with cipher algorithm {cipher_algorithm}',
         )
 
     def test_aes_crypt(self):
