@@ -7,6 +7,7 @@ from ddt import data, ddt, unpack
 from django.test import TestCase
 
 from django_hmac_authentication.aes import aes_crypt
+from django_hmac_authentication.camellia import camellia_crypt
 from django_hmac_authentication.client_utils import hash_content, sign_string
 from django_hmac_authentication.server_utils import (
     aes_decrypt_hmac_secret,
@@ -33,7 +34,20 @@ class TestUtils(TestCase):
 
         encrypted = aes_crypt(msg, key, iv, encrypt=True)
         decrypted = aes_crypt(encrypted, key, iv, encrypt=False)
-        self.assertTrue(msg == decrypted, 'Decrypted message did not match original')
+        self.assertTrue(
+            msg == decrypted, 'AES decrypted message did not match original'
+        )
+
+    def test_camellia_crypt(self):
+        msg = 'test_message'.encode('utf-8')
+        key = os.urandom(32)
+        iv = os.urandom(16)
+
+        encrypted = camellia_crypt(msg, key, iv, encrypt=True)
+        decrypted = camellia_crypt(encrypted, key, iv, encrypt=False)
+        self.assertTrue(
+            msg == decrypted, 'Camellia decrypted message did not match original'
+        )
 
     @data(
         (
