@@ -9,7 +9,7 @@ namespaces = false
 
 [project]
 name = "django_hmac_authentication"
-version = "2.2.0"
+version = "3.0.0"
 authors = [
   { name="Harisankar Krishna Swamy", email="harisankar.krishna@outlook.com" },
 ]
