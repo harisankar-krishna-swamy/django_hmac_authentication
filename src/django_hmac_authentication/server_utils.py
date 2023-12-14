@@ -26,6 +26,8 @@ expires_in_config_err = 'expires_in config must be string. Example: 4h, 5m, 3600
 
 hmac_cache_alias = setting_for('HMAC_CACHE_ALIAS')
 
+# TODO: 3. The same function can generate 256 bit key for camellia too. rename
+
 
 def aes_encrypted_hmac_secret() -> tuple:
     salt = os.urandom(24)
@@ -37,6 +39,7 @@ def aes_encrypted_hmac_secret() -> tuple:
     return hmac_secret, encrypted, enc_key, salt
 
 
+# TODO: 2. Add camellia decrypt like this
 @lru_cache(maxsize=100)
 def aes_decrypt_hmac_secret(encrypted: bytes, salt: bytes) -> bytes:
     enc_key = pbkdf2_hmac(hash_func, settings.SECRET_KEY.encode(encoding), salt, 1000)
@@ -51,6 +54,7 @@ def create_shared_secret_for_user(user: user_model):
     n_user_hmacs = ApiHMACKey.objects.filter(user=user).count()
     if n_user_hmacs >= max_hmacs_per_user:
         raise ValidationError('Maximum API secrets limit reached for user')
+    # TODO: 1. Pick algorithm to use here
     hmac_secret, encrypted, enc_key, salt = aes_encrypted_hmac_secret()
     hmac_key = ApiHMACKey(
         user=user,
