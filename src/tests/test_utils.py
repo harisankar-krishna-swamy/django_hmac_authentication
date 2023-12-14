@@ -9,6 +9,10 @@ from django.test import TestCase
 from django_hmac_authentication.client_utils import hash_content, sign_string
 from django_hmac_authentication.crypt.aes import aes_crypt
 from django_hmac_authentication.crypt.camellia import camellia_crypt
+from django_hmac_authentication.crypt.settings import (
+    CIPHER_AES_256,
+    CIPHER_CAMELLIA_256,
+)
 from django_hmac_authentication.server_utils import (
     cipher_decrypt_hmac_secret,
     cipher_encrypted_hmac_secret,
@@ -17,10 +21,12 @@ from django_hmac_authentication.server_utils import (
 )
 from tests.factories import ApiHMACKeyFactory, ApiHMACKeyUserFactory
 
+cipher_crypt_map = {CIPHER_AES_256: aes_crypt, CIPHER_CAMELLIA_256: camellia_crypt}
+
 
 @ddt
 class TestUtils(TestCase):
-    @data(('AES-256',), ('CAMELLIA-256',))
+    @data((CIPHER_AES_256,), (CIPHER_CAMELLIA_256,))
     @unpack
     def test_match_hmac_secret(self, cipher_algorithm='AES-256'):
         hmac_secret, encrypted, enc_key, salt = cipher_encrypted_hmac_secret(
@@ -32,26 +38,20 @@ class TestUtils(TestCase):
             f'Decrypted secret did not match original with cipher algorithm {cipher_algorithm}',
         )
 
-    def test_aes_crypt(self):
+    @data((CIPHER_AES_256,), (CIPHER_CAMELLIA_256,))
+    @unpack
+    def test_cipher_crypt(self, cipher_algorithm=CIPHER_AES_256):
         msg = 'test_message'.encode('utf-8')
         key = os.urandom(32)
         iv = os.urandom(16)
 
-        encrypted = aes_crypt(msg, key, iv, encrypt=True)
-        decrypted = aes_crypt(encrypted, key, iv, encrypt=False)
-        self.assertTrue(
-            msg == decrypted, 'AES decrypted message did not match original'
+        encrypted = cipher_crypt_map[cipher_algorithm](msg, key, iv, encrypt=True)
+        decrypted = cipher_crypt_map[cipher_algorithm](
+            encrypted, key, iv, encrypt=False
         )
-
-    def test_camellia_crypt(self):
-        msg = 'test_message'.encode('utf-8')
-        key = os.urandom(32)
-        iv = os.urandom(16)
-
-        encrypted = camellia_crypt(msg, key, iv, encrypt=True)
-        decrypted = camellia_crypt(encrypted, key, iv, encrypt=False)
         self.assertTrue(
-            msg == decrypted, 'Camellia decrypted message did not match original'
+            msg == decrypted,
+            f'{cipher_algorithm} decrypted message did not match original',
         )
 
     @data(
