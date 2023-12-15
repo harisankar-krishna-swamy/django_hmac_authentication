@@ -20,9 +20,9 @@ Django hmac authentication with multiple encrypted secrets per user
 * Throttling requests on hmac key used in authentication
 
 ### What's new 
-Camellia 256 cipher is added. Package now picks one of AES-256 or Camellia-256 to
-secure users' HMAC secrets at runtime. Encryption now has two algorithms instead of just one.  
-No change is needed at client side. To use new feature just update package and run migrations. 
+Camellia 256 cipher is used along with aes. Package now picks one of AES-256 or Camellia-256 to
+secure users' HMAC secrets at runtime. Encryption now has two algorithms instead of just one. 
+Client side changes not required. To use new feature just update package and run migrations. 
 
 # 1. Install
 `pip install django_hmac_authentication`
@@ -187,11 +187,11 @@ Django settings.SECRET_KEY                 salt per user
                                 │              │
                                 │              │
                                 ▼              │
-                          aes 256 bit key      │
+                              256 bit key      │
                                 │              │
                                 │              │
                                 ▼              │
-   enc user secret  ◄────────  aes             │
+   encrypt user secret  ◄───── aes/camellia    │
                                 ▲              │
                                 │              │
                                iv ◄────────────┘
