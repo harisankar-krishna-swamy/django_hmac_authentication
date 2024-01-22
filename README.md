@@ -1,24 +1,22 @@
 # django_hmac_authentication
-Django hmac authentication with multiple encrypted secrets per user
+Django hmac authentication with multiple encrypted hmac secrets per user
 
 > :rocket: :rocket: Built on Debian, KDE and CI/CD on GitLab :penguin: :penguin: :rocket: :rocket: 
-
 # Features
-
-* Django model for HMAC's shared secret 
-* Each user can have many hmac shared secrets and each secret is protected with a separate key. 
-* Authentication class `HMACAuthentication` to use with Django Rest Framework 
-* Reject requests earlier than configured timeout and also with future timestamps 
-* Supports `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256`
-* HMAC secret can be created with management command or obtained with a configured url
-* Supports Javascript and Python clients for programmatic access 
-* Optional configuration to auto revoke keys after N failed attempts to authenticate
-* Optional `HMAC_EXPIRES_IN` configuration. If set HMAC keys will expire after interval.
-* Option to speedup using a cache in Django's `CACHES` settings.
-* A lru_cache is enabled locally to save compute time to decode hmac keys
-* An out-of-band capability to reject requests (kill switch)
-* Throttling requests on hmac key used in authentication
-
+| #  | Feature                         | Description       |
+| -- | ------------------------------- | ----------------- |
+| 1  | Multiple hmac secrets per user  | Each secret is protected with a separate key |
+| 2  | Django Model and Authentication | Django `ApiHMACKey` and Authentication classes `HMACAuthentication` for Django Rest Framework | 
+| 3  | Obtain credentials              | Django management command or a configured url to get credentials |
+| 4  | Reject stale requests           | Reject requests earlier than configured timeout and also with future timestamps |
+| 5  | Supported HMAC hash functions   | `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256` |
+| 6  | Clients                         | Javascript and Python clients for programmatic access. See `example_django_project` and `Postman` collections |
+| 7  | Auto-Revoke                     | Optional configuration to auto revoke keys after N failed attempts to authenticate |
+| 8  | Auto-Expire                     | Optional `HMAC_EXPIRES_IN` configuration. If set HMAC keys will expire after interval |
+| 9  | Performance (Caching)           | * Option to speedup using a cache in Django's `CACHES` settings.  <br/>* A `lru_cache` is enabled locally to save compute time to decode hmac key |
+| 10 | Kill switch                     | An out-of-band capability to reject requests |
+| 11 | Throttling                      | Throttling requests on hmac key used |
+| 12 | Supported encryption ciphers    | `AES-256`, `CAMELLIA-256` to encrypt user's hmac secrets |
 ### What's new 
 Camellia 256 cipher is used along with aes. Package now picks one of AES-256 or Camellia-256 to
 secure users' HMAC secrets at runtime. Encryption now has two algorithms instead of just one. 
@@ -29,34 +27,32 @@ Client side changes not required. To use new feature just update package and run
 
 # 2. Configuration
 
-## 2.1 settings.py
-Set `HMAC_AUTHENTICATION_SETTINGS` dict with values for  
+## 2.1 settings.py 
+See example configurations below.
 
-* `MAX_HMACS_PER_USER` Default: 10  
-* `HMAC_AUTH_REQUEST_TIMEOUT` in seconds. Requests earlier than this are rejected. Default: `5`
-* `django_hmac_authentication` to installed apps along with `rest_framework`.
-* Add hmac authentication class to `REST_FRAMEWORK` in `settings.py`. 
+#### 1. In Django `INSTALLED_APPS` 
+Add `django_hmac_authentication` to INSTALLED_APPS
+#### 2. In `REST_FRAMEWORK` 
+Add HMAC authentication class to REST_FRAMEWORK settings dict.
+#### 3. Package specific settings in `HMAC_AUTHENTICATION_SETTINGS` 
 
-Optional settings:
+* `MAX_HMACS_PER_USER`  `Default: 10`. Maximum hmac secrets per user
+* `HMAC_AUTH_REQUEST_TIMEOUT` Requests earlier than this are rejected. Default: `5` in seconds 
+* Optional settings
+  * `HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD`Max attempts to authenticate after which key is auto-revoked 
+  * `HMAC_EXPIRES_IN` HMAC keys will auto-expire after this period in hours, minutes or seconds.  Example`'1h'`, `'5m'`, `'3600s'` 
+  * `HMAC_CACHE_ALIAS` Alias of a cache backend in Django's `CACHES` settings. When set, the cache specified by the 
+     alias is used to cache hmac keys. Example: `hmac_cache`. Default: None (i.e caching disabled) 
+  * `HMAC_KILL_SWITCH` If set, enables checking cache to force-reject requests for certain keys. `HMAC_CACHE_ALIAS` must be set. 
+     > Note: The hmac keys in this package can be disabled and enabled using the admin interface. 
+     This switch helps when that option is not feasible and out of band intervention is needed. 
+     See `example_django_project/scripts/out_of_band_hmac_kill_switch.py` for a sample program that demonstrates switching keys on/off. Depending on cache backend used and CACHES configuration in settings.py, the cache key needs 
+     to be formatted. 
+     [See Django cache key formatting based on configuration](https://github.com/django/django/blob/64cea1e48f285ea2162c669208d95188b32bbc82/django/core/cache/backends/base.py#L32) 
+  * `Throttling` Add throttling class in `REST_FRAMEWORK` > `DEFAULT_THROTTLE_CLASSES` as  
+    `django_hmac_authentication.throttling.HMACApiKeyRateThrottle`. Throttling uses cache and `HMAC_CACHE_ALIAS` must be set. By default all hmac keys are created with rate `200/min`. Rate can be changed on admin interface.  
 
-* `HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD` for maximum tolerated failed attempts.
-  Setting this value will auto revoke keys that exceed max failed attempts.
-* `HMAC_EXPIRES_IN` to expire keys after interval in hours, minutes or seconds.  Example`'1h'`, `'5m'`, `'3600s'` 
-
-* `HMAC_CACHE_ALIAS` Alias of a cache backend in Django's `CACHES` settings. When set, the cache specified by the alias 
-   is used to cache hmac keys. Example: `hmac_cache`. Default: None (i.e caching disabled)
-* `HMAC_KILL_SWITCH` If set, enables checking cache to force-reject requests for certain keys. 
-  `HMAC_CACHE_ALIAS` must be set.   
-   > Note: The hmac keys in this package can be disabled and enabled using the admin interface (i.e through db). This switch
-     helps when that option is not feasible and out of band intervention is needed.   
-     See `example_django_project/scripts/out_of_band_hmac_kill_switch.py` for a sample     program that demonstrates switching keys on/off. 
-     Depending on cache backend used and CACHES configuration in settings.py, the cache key needs to be formatted. 
-     [See Django cache key formatting based on configuration](https://github.com/django/django/blob/64cea1e48f285ea2162c669208d95188b32bbc82/django/core/cache/backends/base.py#L32)   
-* `Throttling requests on hmac key` with `django_hmac_authentication.throttling.HMACApiKeyRateThrottle`.  
-  Throttling uses cache and `HMAC_CACHE_ALIAS` must be set. By default all hmac keys are created with rate 
-  `200/min`. Rate can be changed on admin. Set throttling class in `DEFAULT_THROTTLE_CLASSES` as shown in example below.
-
-Example
+#### Example
 ```python
 HMAC_AUTHENTICATION_SETTINGS = {
     'MAX_HMACS_PER_USER':10,
