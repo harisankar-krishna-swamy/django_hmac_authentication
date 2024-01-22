@@ -11,7 +11,7 @@ namespaces = false
 name = "django_hmac_authentication"
 version = "3.0.0"
 authors = [
-  { name="Harisankar Krishna Swamy", email="harisankar.krishna@outlook.com" },
+  { name="Harisankar Krishna Swamy @ Vevde", email="harisankar.krishna@outlook.com" },
 ]
 description = "Django HMAC authentication using shared secret"
 readme = "README.md"
