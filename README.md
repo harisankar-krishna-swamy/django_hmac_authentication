@@ -1,23 +1,22 @@
 # django_hmac_authentication
-Django hmac authentication with multiple encrypted secrets per user
+Django hmac authentication with multiple encrypted hmac secrets per user
 
 > :rocket: :rocket: Built on Debian, KDE and CI/CD on GitLab :penguin: :penguin: :rocket: :rocket: 
-
 # Features
-
-* Django model for HMAC's shared secret 
-* Each user can have many hmac shared secrets and each secret is protected with a separate key. 
-* Authentication class `HMACAuthentication` to use with Django Rest Framework 
-* Reject requests earlier than configured timeout and also with future timestamps 
-* Supports `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256`
-* HMAC secret can be created with management command or obtained with a configured url
-* Supports Javascript and Python clients for programmatic access 
-* Optional configuration to auto revoke keys after N failed attempts to authenticate
-* Optional `HMAC_EXPIRES_IN` configuration. If set HMAC keys will expire after interval.
-* Option to speedup using a cache in Django's `CACHES` settings.
-* A lru_cache is enabled locally to save compute time to decode hmac keys
-* An out-of-band capability to reject requests (kill switch)
-* Throttling requests on hmac key used in authentication
+#  | Feature                         | Description                                                                                                                                |
+---|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
+1  | Multiple hmac secrets per user  | Each secret is protected with a separate key                                                                                               |
+2  | Django Model and Authentication | Django `ApiHMACKey` and Authentication classes `HMACAuthentication` for Django Rest Framework                                              | 
+3  | Obtain credentials              | Django management command or a configured url to get credentials                                                                           |
+3  | Reject stale requests           | Reject requests earlier than configured timeout and also with future timestamps                                                            |
+4  | Supported HMAC hash functions   | `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256`                                                                                                |
+6  | Clients                         | Javascript and Python clients for programmatic access. See `example_django_project` and `Postman` collections                              |
+7  | Auto-Revoke                     | Optional configuration to auto revoke keys after N failed attempts to authenticate                                                         |
+8  | Auto-Expire                     | Optional `HMAC_EXPIRES_IN` configuration. If set HMAC keys will expire after interval                                                      |
+9  | Performance (Caching)           | * Option to speedup using a cache in Django's `CACHES` settings.  <br/>* A `lru_cache` is enabled locally to save compute time to decode hmac key |
+10 | Kill switch                     | An out-of-band capability to reject requests                                                                                               |
+11 | Throttling                      | Throttling requests on hmac key used                                                                                                       |
+12 | Supported encryption ciphers    | `AES-256`, `CAMELLIA-256` to encrypt user's hmac secrets                                                                                   |
 
 ### What's new 
 Camellia 256 cipher is used along with aes. Package now picks one of AES-256 or Camellia-256 to
