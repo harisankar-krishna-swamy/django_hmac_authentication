@@ -27,33 +27,20 @@ Client side changes not required. To use new feature just update package and run
 
 # 2. Configuration
 
-## 2.1 settings.py
-Set `HMAC_AUTHENTICATION_SETTINGS` dict with values for  
-
-* `MAX_HMACS_PER_USER` Default: 10  
-* `HMAC_AUTH_REQUEST_TIMEOUT` in seconds. Requests earlier than this are rejected. Default: `5`
-* `django_hmac_authentication` to installed apps along with `rest_framework`.
-* Add hmac authentication class to `REST_FRAMEWORK` in `settings.py`. 
-
-Optional settings:
-
-* `HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD` for maximum tolerated failed attempts.
-  Setting this value will auto revoke keys that exceed max failed attempts.
-* `HMAC_EXPIRES_IN` to expire keys after interval in hours, minutes or seconds.  Example`'1h'`, `'5m'`, `'3600s'` 
-
-* `HMAC_CACHE_ALIAS` Alias of a cache backend in Django's `CACHES` settings. When set, the cache specified by the alias 
-   is used to cache hmac keys. Example: `hmac_cache`. Default: None (i.e caching disabled)
-* `HMAC_KILL_SWITCH` If set, enables checking cache to force-reject requests for certain keys. 
-  `HMAC_CACHE_ALIAS` must be set.   
-   > Note: The hmac keys in this package can be disabled and enabled using the admin interface (i.e through db). This switch
-     helps when that option is not feasible and out of band intervention is needed.   
-     See `example_django_project/scripts/out_of_band_hmac_kill_switch.py` for a sample     program that demonstrates switching keys on/off. 
-     Depending on cache backend used and CACHES configuration in settings.py, the cache key needs to be formatted. 
-     [See Django cache key formatting based on configuration](https://github.com/django/django/blob/64cea1e48f285ea2162c669208d95188b32bbc82/django/core/cache/backends/base.py#L32)   
-* `Throttling requests on hmac key` with `django_hmac_authentication.throttling.HMACApiKeyRateThrottle`.  
-  Throttling uses cache and `HMAC_CACHE_ALIAS` must be set. By default all hmac keys are created with rate 
-  `200/min`. Rate can be changed on admin. Set throttling class in `DEFAULT_THROTTLE_CLASSES` as shown in example below.
-
+## 2.1 settings.py 
+| # | Setting                               | Description       |
+|---|---------------------------------------| ----------------- |
+| 1 | In Django `INSTALLED_APPS`            | Add `django_hmac_authentication` to INSTALLED_APPS |
+| 2 | In `REST_FRAMEWORK`                   | Add HMAC authentication class to REST_FRAMEWORK settings dict. See example below. |
+|   | `HMAC_AUTHENTICATION_SETTINGS`        | hmac authentication configuration dict entries |
+| a | `MAX_HMACS_PER_USER`                  | `Default: 10`. Maximum hmac secrets per user  |
+| b | `HMAC_AUTH_REQUEST_TIMEOUT`           | Requests earlier than this are rejected. Default: `5` in seconds | 
+|   | Optional settings                     |  |
+| c | `HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD` | Max attempts to authenticate after which key is auto-revoked |
+| d | `HMAC_EXPIRES_IN`                     | HMAC keys will auto-expire after this period in hours, minutes or seconds.  Example`'1h'`, `'5m'`, `'3600s'` |
+| e | `HMAC_CACHE_ALIAS`                    | Alias of a cache backend in Django's `CACHES` settings. When set, the cache specified by the alias is used to cache hmac keys. Example: `hmac_cache`. Default: None (i.e caching disabled) |
+| f | `HMAC_KILL_SWITCH`                    | If set, enables checking cache to force-reject requests for certain keys. `HMAC_CACHE_ALIAS` must be set. The hmac keys in this package can be disabled and enabled using the admin interface (i.e through db). This switch helps when that option is not feasible and out of band intervention is needed. See `example_django_project/scripts/out_of_band_hmac_kill_switch.py` for a sample program that demonstrates switching keys on/off. Depending on cache backend used and CACHES configuration in settings.py, the cache key needs to be formatted. [See Django cache key formatting based on configuration](https://github.com/django/django/blob/64cea1e48f285ea2162c669208d95188b32bbc82/django/core/cache/backends/base.py#L32) |
+| g | `Throttling`                          | Add throttling class in `REST_FRAMEWORK` > `DEFAULT_THROTTLE_CLASSES` as  `django_hmac_authentication.throttling.HMACApiKeyRateThrottle`. Throttling uses cache and `HMAC_CACHE_ALIAS` must be set. By default all hmac keys are created with rate `200/min`. Rate can be changed on admin interface.  |
 Example
 ```python
 HMAC_AUTHENTICATION_SETTINGS = {
