@@ -1,7 +1,7 @@
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-from django_hmac_authentication.padding import pad, unpad
+from django_hmac_authentication.crypt.padding import pad, unpad
 
 block_size = 128
 

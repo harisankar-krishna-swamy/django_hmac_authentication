@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from ddt import data, ddt, unpack
 
-from django_hmac_authentication.padding import pad, unpad
+from django_hmac_authentication.crypt.padding import pad, unpad
 
 
 @ddt
