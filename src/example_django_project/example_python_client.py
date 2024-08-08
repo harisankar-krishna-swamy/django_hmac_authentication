@@ -7,8 +7,8 @@ import requests
 from django_hmac_authentication.client_utils import (
     compose_authorization_header,
     prepare_string_to_sign,
-    sign_string,
 )
+from django_hmac_authentication.crypt.signatures import sign_string
 
 
 def get_api_key_secret(url, username, password):
