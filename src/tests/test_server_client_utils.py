@@ -1,5 +1,4 @@
 import copy
-import os
 from datetime import timedelta
 from unittest import mock
 
@@ -14,8 +13,6 @@ from django_hmac_authentication.crypt.settings import (
     CIPHER_CAMELLIA_256,
 )
 from django_hmac_authentication.server_utils import (
-    cipher_decrypt_hmac_secret,
-    cipher_encrypted_hmac_secret,
     get_api_hmac_key,
     timedelta_from_config,
 )
@@ -26,34 +23,6 @@ cipher_crypt_map = {CIPHER_AES_256: aes_crypt, CIPHER_CAMELLIA_256: camellia_cry
 
 @ddt
 class TestUtils(TestCase):
-    @data((CIPHER_AES_256,), (CIPHER_CAMELLIA_256,))
-    @unpack
-    def test_match_hmac_secret(self, cipher_algorithm='AES-256'):
-        hmac_secret, encrypted, enc_key, salt = cipher_encrypted_hmac_secret(
-            cipher_algorithm
-        )
-        decrypted = cipher_decrypt_hmac_secret(encrypted, salt, cipher_algorithm)
-        self.assertTrue(
-            hmac_secret == decrypted,
-            f'Decrypted secret did not match original with cipher algorithm {cipher_algorithm}',
-        )
-
-    @data((CIPHER_AES_256,), (CIPHER_CAMELLIA_256,))
-    @unpack
-    def test_cipher_crypt(self, cipher_algorithm=CIPHER_AES_256):
-        msg = 'test_message'.encode('utf-8')
-        key = os.urandom(32)
-        iv = os.urandom(16)
-
-        encrypted = cipher_crypt_map[cipher_algorithm](msg, key, iv, encrypt=True)
-        decrypted = cipher_crypt_map[cipher_algorithm](
-            encrypted, key, iv, encrypt=False
-        )
-        self.assertTrue(
-            msg == decrypted,
-            f'{cipher_algorithm} decrypted message did not match original',
-        )
-
     @data(
         (
             'HMAC-SHA512',

@@ -5,8 +5,8 @@ from ddt import data, ddt, unpack
 from rest_framework.test import APIRequestFactory
 
 from django_hmac_authentication.authentication import HMACAuthentication
+from django_hmac_authentication.crypt.hmac import cipher_encrypted_hmac_secret
 from django_hmac_authentication.crypt.settings import SUPPORTED_CIPHERS
-from django_hmac_authentication.server_utils import cipher_encrypted_hmac_secret
 from tests.factories import ApiHMACKeyFactory
 from tests.testing_utils import TestHMACAuthenticationBase
 
