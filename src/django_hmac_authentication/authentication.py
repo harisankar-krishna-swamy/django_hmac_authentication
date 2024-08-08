@@ -6,7 +6,8 @@ from django.conf import settings
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
 
-from django_hmac_authentication.client_utils import prepare_string_to_sign, sign_string
+from django_hmac_authentication.client_utils import prepare_string_to_sign
+from django_hmac_authentication.crypt.signatures import sign_string
 from django_hmac_authentication.exceptions import (
     DateFormatException,
     ExpiredKeyException,

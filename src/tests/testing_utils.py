@@ -7,8 +7,9 @@ from rest_framework.test import APITestCase
 from rest_framework.views import APIView
 
 from django_hmac_authentication.authentication import HMACAuthentication
-from django_hmac_authentication.client_utils import prepare_string_to_sign, sign_string
+from django_hmac_authentication.client_utils import prepare_string_to_sign
 from django_hmac_authentication.crypt.hmac import cipher_decrypt_hmac_secret
+from django_hmac_authentication.crypt.signatures import sign_string
 from django_hmac_authentication.throttling import HMACApiKeyRateThrottle
 from tests.factories import ApiHMACKeyFactory, ApiHMACKeyUserFactory
 
