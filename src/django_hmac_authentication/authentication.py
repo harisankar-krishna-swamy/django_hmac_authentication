@@ -2,10 +2,12 @@ import base64
 import datetime
 from datetime import timezone
 
+from django.conf import settings
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
+from vevde_security_utils.crypt.signatures import sign_string
 
-from django_hmac_authentication.client_utils import prepare_string_to_sign, sign_string
+from django_hmac_authentication.client_utils import prepare_string_to_sign
 from django_hmac_authentication.exceptions import (
     DateFormatException,
     ExpiredKeyException,
@@ -18,7 +20,7 @@ from django_hmac_authentication.exceptions import (
 )
 from django_hmac_authentication.server_utils import (
     check_key_for_kill_switch,
-    cipher_decrypt_hmac_secret,
+    decrypt_hmac_secret,
     get_api_hmac_key,
     parse_authorization_header,
 )
@@ -36,8 +38,8 @@ class HMACAuthentication(authentication.BaseAuthentication):
     def compute_request_signature(self, request, auth_method, date_in, hmac_key):
         enc_secret = base64.b64decode(hmac_key.secret.encode('utf-8'))
         enc_salt = base64.b64decode(hmac_key.salt.encode('utf-8'))
-        secret = cipher_decrypt_hmac_secret(
-            enc_secret, enc_salt, hmac_key.cipher_algorithm
+        secret = decrypt_hmac_secret(
+            enc_secret, settings.SECRET_KEY, enc_salt, hmac_key.cipher_algorithm
         )
 
         data = getattr(request, 'data', None)
