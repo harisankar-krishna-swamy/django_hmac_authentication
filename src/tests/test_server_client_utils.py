@@ -4,13 +4,10 @@ from unittest import mock
 
 from ddt import data, ddt, unpack
 from django.test import TestCase
+from vevde_security_utils.crypt.aes import aes_crypt
+from vevde_security_utils.crypt.camellia import camellia_crypt
+from vevde_security_utils.crypt.settings import CIPHER_AES_256, CIPHER_CAMELLIA_256
 
-from django_hmac_authentication.crypt.aes import aes_crypt
-from django_hmac_authentication.crypt.camellia import camellia_crypt
-from django_hmac_authentication.crypt.settings import (
-    CIPHER_AES_256,
-    CIPHER_CAMELLIA_256,
-)
 from django_hmac_authentication.server_utils import (
     get_api_hmac_key,
     timedelta_from_config,

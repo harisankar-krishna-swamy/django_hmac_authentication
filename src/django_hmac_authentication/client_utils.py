@@ -1,6 +1,6 @@
 import json
 
-from django_hmac_authentication.crypt.signatures import hash_content
+from vevde_security_utils.crypt.signatures import hash_content
 
 encoding = 'utf-8'
 
