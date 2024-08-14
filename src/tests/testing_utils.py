@@ -1,13 +1,15 @@
 import base64
 from datetime import datetime, timezone
 
+from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.test import APITestCase
 from rest_framework.views import APIView
+from vevde_security_utils.crypt.hmac import cipher_decrypt_hmac_secret
+from vevde_security_utils.crypt.signatures import sign_string
 
 from django_hmac_authentication.authentication import HMACAuthentication
-from django_hmac_authentication.client_utils import prepare_string_to_sign, sign_string
-from django_hmac_authentication.server_utils import cipher_decrypt_hmac_secret
+from django_hmac_authentication.client_utils import prepare_string_to_sign
 from django_hmac_authentication.throttling import HMACApiKeyRateThrottle
 from tests.factories import ApiHMACKeyFactory, ApiHMACKeyUserFactory
 
@@ -64,7 +66,10 @@ class TestHMACAuthenticationBase(APITestCase):
 
     def _request_auth_header_fields(self, req_data, digest):
         secret = cipher_decrypt_hmac_secret(
-            self.enc_secret, self.enc_salt, self.hmac_key.cipher_algorithm
+            self.enc_secret,
+            settings.SECRET_KEY,
+            self.enc_salt,
+            self.hmac_key.cipher_algorithm,
         )
         utc_8601 = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
         string_to_sign = prepare_string_to_sign(req_data, utc_8601, digest)

@@ -3,14 +3,15 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 import factory
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.db.models.signals import post_save
 from factory.django import DjangoModelFactory
+from vevde_security_utils.crypt.hmac import cipher_encrypted_hmac_secret
+from vevde_security_utils.crypt.settings import CIPHER_AES_256
 
-from django_hmac_authentication.crypt.settings import CIPHER_AES_256
 from django_hmac_authentication.models import ApiHMACKey
-from django_hmac_authentication.server_utils import cipher_encrypted_hmac_secret
 
 user_model = get_user_model()
 test_password = secrets.token_hex()
@@ -19,7 +20,7 @@ test_password = secrets.token_hex()
     test_encrypted,
     test_enc_key,
     test_salt,
-) = cipher_encrypted_hmac_secret(CIPHER_AES_256)
+) = cipher_encrypted_hmac_secret(settings.SECRET_KEY, CIPHER_AES_256)
 
 
 @factory.django.mute_signals(post_save)
