@@ -8,9 +8,9 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.db.models.signals import post_save
 from factory.django import DjangoModelFactory
+from vevde_security_utils.crypt.hmac import cipher_encrypted_hmac_secret
+from vevde_security_utils.crypt.settings import CIPHER_AES_256
 
-from django_hmac_authentication.crypt.hmac import cipher_encrypted_hmac_secret
-from django_hmac_authentication.crypt.settings import CIPHER_AES_256
 from django_hmac_authentication.models import ApiHMACKey
 
 user_model = get_user_model()

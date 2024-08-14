@@ -6,12 +6,12 @@ from functools import lru_cache
 from django.conf import settings
 from django.core.cache import caches
 from rest_framework.exceptions import ValidationError
-
-from django_hmac_authentication.crypt.hmac import (
+from vevde_security_utils.crypt.hmac import (
     cipher_decrypt_hmac_secret,
     cipher_encrypted_hmac_secret,
 )
-from django_hmac_authentication.crypt.settings import SUPPORTED_CIPHERS
+from vevde_security_utils.crypt.settings import SUPPORTED_CIPHERS
+
 from django_hmac_authentication.exceptions import KeyKillSwitchException
 from django_hmac_authentication.models import ApiHMACKey
 from django_hmac_authentication.settings import setting_for
