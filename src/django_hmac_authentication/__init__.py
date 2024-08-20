@@ -1,3 +1,3 @@
 name = 'django_hmac_authentication'
-version = '3.2.0rc3'
+version = '4.0.0'
 default_app_config = 'django_hmac_authentication.apps.DjangoHMACAuthenticationConfig'
