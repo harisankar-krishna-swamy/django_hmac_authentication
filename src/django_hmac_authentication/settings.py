@@ -3,6 +3,7 @@ from django.conf import settings
 DEFAULTS = {
     'MAX_HMACS_PER_USER': 10,
     'HMAC_AUTH_REQUEST_TIMEOUT': 5,
+    'HMAC_AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
     # Optional configs
     'HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD': None,
     'HMAC_EXPIRES_IN': None,

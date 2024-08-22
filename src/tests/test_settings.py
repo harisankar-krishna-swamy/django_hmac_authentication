@@ -33,6 +33,7 @@ class TestSettings(TestCase):
 
         orig_value = getattr(settings, 'HMAC_AUTHENTICATION_SETTINGS', None)
         overrides = {
+            'HMAC_AUTH_HEADER_NAME': 'HMAC_SIGNATURE',
             'MAX_HMACS_PER_USER': 100,
             'HMAC_AUTH_REQUEST_TIMEOUT': 50,
             'HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD': 10,
