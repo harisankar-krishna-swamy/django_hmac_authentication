@@ -11,7 +11,9 @@ from vevde_security_utils.crypt.hmac import (
     cipher_encrypted_hmac_secret,
 )
 from vevde_security_utils.crypt.settings import SUPPORTED_CIPHERS
+from vevde_security_utils.crypt.signatures import sign_string
 
+from django_hmac_authentication.common_utils import prepare_string_to_sign
 from django_hmac_authentication.exceptions import KeyKillSwitchException
 from django_hmac_authentication.models import ApiHMACKey
 from django_hmac_authentication.settings import setting_for
@@ -117,3 +119,25 @@ def parse_authorization_header(content):
         return auth_method, api_key, signature, dt
     except (AttributeError, ValueError):
         return None, None, None, None
+
+
+def compute_request_signature(request, auth_method, date_in, hmac_key):
+    """
+    Compute signature on request
+
+    @param request: request object
+    @param auth_method: HMAC method. One of 'HMAC-SHA512', 'HMAC-SHA384', 'HMAC-SHA256'
+    @param date_in: utc 8601 string parsed from request authorization signature header
+    @param hmac_key: ApiHMACKey to use for computing request signature
+    @return: computed signature
+    """
+    enc_secret = base64.b64decode(hmac_key.secret.encode('utf-8'))
+    enc_salt = base64.b64decode(hmac_key.salt.encode('utf-8'))
+    secret = decrypt_hmac_secret(
+        enc_secret, settings.SECRET_KEY, enc_salt, hmac_key.cipher_algorithm
+    )
+
+    data = getattr(request, 'data', None)
+    string_to_sign = prepare_string_to_sign(data, date_in, auth_method)
+    computed_signature = sign_string(string_to_sign, secret, auth_method)
+    return computed_signature

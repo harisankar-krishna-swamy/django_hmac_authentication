@@ -1,13 +1,9 @@
-import base64
 import datetime
 from datetime import timezone
 
-from django.conf import settings
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
-from vevde_security_utils.crypt.signatures import sign_string
 
-from django_hmac_authentication.client_utils import prepare_string_to_sign
 from django_hmac_authentication.exceptions import (
     DateFormatException,
     ExpiredKeyException,
@@ -20,7 +16,7 @@ from django_hmac_authentication.exceptions import (
 )
 from django_hmac_authentication.server_utils import (
     check_key_for_kill_switch,
-    decrypt_hmac_secret,
+    compute_request_signature,
     get_api_hmac_key,
     parse_authorization_header,
 )
@@ -35,18 +31,6 @@ hmac_auth_header_name = setting_for('HMAC_AUTH_HEADER_NAME')
 
 class HMACAuthentication(authentication.BaseAuthentication):
     authentication_methods = {'HMAC-SHA512', 'HMAC-SHA384', 'HMAC-SHA256'}
-
-    def compute_request_signature(self, request, auth_method, date_in, hmac_key):
-        enc_secret = base64.b64decode(hmac_key.secret.encode('utf-8'))
-        enc_salt = base64.b64decode(hmac_key.salt.encode('utf-8'))
-        secret = decrypt_hmac_secret(
-            enc_secret, settings.SECRET_KEY, enc_salt, hmac_key.cipher_algorithm
-        )
-
-        data = getattr(request, 'data', None)
-        string_to_sign = prepare_string_to_sign(data, date_in, auth_method)
-        computed_signature = sign_string(string_to_sign, secret, auth_method)
-        return computed_signature
 
     def authenticate(self, request):
         request_meta = request.META
@@ -97,7 +81,7 @@ class HMACAuthentication(authentication.BaseAuthentication):
         if not hmac_key.user.is_active:
             raise AuthenticationFailed('User is inactive')
 
-        computed_signature = self.compute_request_signature(
+        computed_signature = compute_request_signature(
             request, auth_method, date_in, hmac_key
         )
         if not computed_signature == signature:

@@ -4,10 +4,8 @@ import json
 
 import requests
 
-from django_hmac_authentication.client_utils import (
-    compose_authorization_header,
-    prepare_string_to_sign,
-)
+from django_hmac_authentication.client_utils import compose_authorization_header
+from django_hmac_authentication.common_utils import prepare_string_to_sign
 from django_hmac_authentication.crypt.signatures import sign_string
 
 
