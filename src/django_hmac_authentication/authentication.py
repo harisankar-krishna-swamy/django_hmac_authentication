@@ -30,6 +30,7 @@ auth_req_timeout = setting_for('HMAC_AUTH_REQUEST_TIMEOUT')
 failed_attempts_threshold = setting_for('HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD')
 hmac_expires_in = setting_for('HMAC_EXPIRES_IN')
 hmac_kill_switch_on = setting_for('HMAC_KILL_SWITCH')
+hmac_auth_header_name = setting_for('HMAC_AUTH_HEADER_NAME')
 
 
 class HMACAuthentication(authentication.BaseAuthentication):
@@ -49,7 +50,7 @@ class HMACAuthentication(authentication.BaseAuthentication):
 
     def authenticate(self, request):
         request_meta = request.META
-        auth_hdr = request_meta.get('HTTP_AUTHORIZATION')
+        auth_hdr = request_meta.get(hmac_auth_header_name)
 
         if not auth_hdr:
             return None
