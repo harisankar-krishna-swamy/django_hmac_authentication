@@ -13,6 +13,7 @@ class AdminApiHMACKey(admin.ModelAdmin):
         'id',
         'deactivated',
         'expired',
+        'test_mode',
         'created_at',
         'modified_on',
     )
@@ -27,6 +28,7 @@ class AdminApiHMACKey(admin.ModelAdmin):
         'user',
         'id',
         'revoked',
+        'test_mode',
         'expires_at',
         'throttle_rate',
         'cipher_algorithm',

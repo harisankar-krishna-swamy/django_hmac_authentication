@@ -47,6 +47,7 @@ class ApiHMACKey(models.Model):
         editable=False,
         default='AES-256',
     )
+    test_mode = models.BooleanField(_('Test mode?'), default=False)
 
     def __str__(self):
         return f'{self.user}'

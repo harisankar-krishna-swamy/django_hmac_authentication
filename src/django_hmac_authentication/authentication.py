@@ -105,6 +105,10 @@ class HMACAuthentication(authentication.BaseAuthentication):
                 self._revoke_key_on_failed_attempts(hmac_key)
             raise SignatureVerificationException()
 
+        # Set the key to request for downstream processing. For example, to switch on test_mode
+
+        setattr(request, 'api_hmac_key', hmac_key)
+
         return hmac_key.user, None
 
     def _revoke_key_on_failed_attempts(self, hmac_key):
