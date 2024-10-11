@@ -25,6 +25,7 @@ expires_in_units = ('h', 'm', 's')
 expires_in_config_err = 'expires_in config must be string. Example: 4h, 5m, 3600s etc'
 
 hmac_cache_alias = setting_for('HMAC_CACHE_ALIAS')
+hmac_kd_password = setting_for('HMAC_KD_PASSWORD')
 
 
 @lru_cache(maxsize=100)
@@ -46,7 +47,7 @@ def create_shared_secret_for_user(user: user_model):
     cipher_index = random.randint(0, len(SUPPORTED_CIPHERS) - 1)
     cipher_algorithm = SUPPORTED_CIPHERS[cipher_index]
     hmac_secret, encrypted, enc_key, salt = cipher_encrypted_hmac_secret(
-        settings.SECRET_KEY, cipher_algorithm
+        hmac_kd_password, cipher_algorithm
     )
     hmac_key = ApiHMACKey(
         user=user,

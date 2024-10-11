@@ -40,6 +40,7 @@ class TestSettings(TestCase):
             'HMAC_EXPIRES_IN': '2h',
             'HMAC_CACHE_ALIAS': 'alias',
             'HMAC_KILL_SWITCH': True,
+            'HMAC_KD_PASSWORD': 'test_hmac_key_definition_password',
         }
         setattr(settings, 'HMAC_AUTHENTICATION_SETTINGS', overrides)
 

@@ -3,30 +3,36 @@ Django hmac authentication with multiple encrypted hmac secrets per user
 
 > :rocket: :rocket: Built on Debian, KDE and CI/CD on GitLab :penguin: :penguin: :rocket: :rocket: 
 # Features
-| #  | Feature                         | Description                                                                                                                                      |
-|----|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1  | Multiple hmac secrets per user  | Each secret is protected with a separate key                                                                                                     |
-| 2  | Django Model and Authentication | Django `ApiHMACKey` and Authentication classes `HMACAuthentication` for Django Rest Framework                                                    | 
-| 3  | Obtain credentials              | Django management command or a configured url to get credentials                                                                                 |
-| 4  | Reject stale requests           | Reject requests earlier than configured timeout and also with future timestamps                                                                  |
-| 5  | Supported HMAC hash functions   | `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256`                                                                                                      |
-| 6  | Clients                         | Javascript and Python clients for programmatic access. See `example_django_project` and `Postman` collections                                    |
-| 7  | Auto-Revoke                     | Optional configuration to auto revoke keys after N failed attempts to authenticate                                                               |
-| 8  | Auto-Expire                     | Optional `HMAC_EXPIRES_IN` configuration. If set HMAC keys will expire after interval                                                            |
-| 9  | Performance (Caching)           | * Option to speedup using a cache in Django's `CACHES` settings.  <br/>* A `lru_cache` is enabled locally to save compute time to decode hmac key |
-| 10 | Kill switch                     | An out-of-band capability to reject requests                                                                                                     |
-| 11 | Throttling                      | Throttling requests on hmac key used                                                                                                             |
-| 12 | Supported encryption ciphers    | `AES-256`, `CAMELLIA-256` to encrypt user's hmac secrets. Chosen randomly from the two                                                           |
-| 13 | test_mode for keys              | Keys have `test_mode` flag in Django admin set to default `False`. Authenticated requests will have attribute `api_hmac_key`                     |
+| #  | Feature                                         | Description                                                                                                                   |
+|----|-------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| 1  | Multiple hmac secrets per user                  | Each secret is protected with a separate key                                                                                  |
+| 2  | Django Model and Authentication                 | Django `ApiHMACKey` and Authentication classes `HMACAuthentication` for Django Rest Framework                                 | 
+| 3  | Obtain credentials                              | Django management command or a configured url to get credentials                                                              |
+| 4  | Reject stale requests                           | Reject requests earlier than configured timeout and also with future timestamps                                               |
+| 5  | Supported HMAC hash functions                   | `HMAC-SHA512`, `HMAC-SHA384`, `HMAC-SHA256`                                                                                   |
+| 6  | Clients                                         | Javascript and Python clients for programmatic access. See `example_django_project` and `Postman` collections                 |
+| 7  | Auto-Revoke                                     | Optional configuration to auto revoke keys after N failed attempts to authenticate                                            |
+| 8  | Auto-Expire                                     | Optional `HMAC_EXPIRES_IN` configuration. If set HMAC keys will expire after interval                                         |
+| 9  | Performance (Caching)                           | * Option to speedup using a cache in Django's `CACHES` settings.  <br/>* A `lru_cache` is enabled locally to save compute time to decode hmac key |
+| 10 | Kill switch                                     | An out-of-band capability to reject requests                                                                                  |
+| 11 | Throttling                                      | Throttling requests on hmac key used                                                                                          |
+| 12 | Supported encryption ciphers                    | `AES-256`, `CAMELLIA-256` to encrypt user's hmac secrets. Chosen randomly from the two                                        |
+| 13 | test_mode for keys                              | Keys have `test_mode` flag in Django admin set to default `False`. Authenticated requests will have attribute `api_hmac_key`  |
+| 14 | Option to separate HMAC key definition password | `HMAC_KD_PASSWORD` to set explicit key definition password. Default is Django `settings.SECRET_KEY`                           |
 ### What's new 
-a) From version 4.0.0 hmac utility functions are refactored to new package `vevde-security-utils`.
-Client apps and Fast API, Flask projects can use this new package to implement hmac authentication. 
-i.e. decoupling utilities from django package pip dependency.
+
+a) Optional separate HMAC key definition password using setting `HMAC_KD_PASSWORD`.  
 
 b) API keys have `test_mode` with default value `False`. This flag can be modified in Django admin. All authenticated 
 requests will have attribute `api_hmac_key`. API views can change behavior on `request.api_hmac_key.test_mode` flag. For example,
 client apps can use `test_mode` keys to onboard i.e test-drive integration with backend and views can handle those `test_mode` 
 requests differently.
+
+c) From version 4.0.0 hmac utility functions are refactored to new package `vevde-security-utils`.
+Client apps and Fast API, Flask projects can use this new package to implement hmac authentication. 
+i.e. decoupling utilities from django package pip dependency.
+
+
 
 # 1. Install
 `pip install django_hmac_authentication`
@@ -57,13 +63,19 @@ Add HMAC authentication class to REST_FRAMEWORK settings dict.
      [See Django cache key formatting based on configuration](https://github.com/django/django/blob/64cea1e48f285ea2162c669208d95188b32bbc82/django/core/cache/backends/base.py#L32) 
   * `Throttling` Add throttling class in `REST_FRAMEWORK` > `DEFAULT_THROTTLE_CLASSES` as  
     `django_hmac_authentication.throttling.HMACApiKeyRateThrottle`. Throttling uses cache and `HMAC_CACHE_ALIAS` must be set. By default all hmac keys are created with rate `200/min`. Rate can be changed on admin interface.  
-
+  * `HMAC_KD_PASSWORD` A secure random string. If set, this will be used as key definition password. If not set, Django `settings.SECRET_KEY` is used as key definition password.
+    > Note: Fresh keys need to be allocated, if you set this to value different from `settings.SECRET_KEY` in an existing project.
 #### Example
 ```python
 HMAC_AUTHENTICATION_SETTINGS = {
     'MAX_HMACS_PER_USER':10,
     'HMAC_AUTH_REQUEST_TIMEOUT': 4,
     # Optional configurations
+    # If needed use a different header for hmac signature in requests
+    'HMAC_AUTH_HEADER_NAME': 'HMAC_SIGNATURE',
+    # Set explicit key definition password to decouple from default Django settings.SECRET_KEY 
+    'HMAC_KD_PASSWORD': 'Use a secure string here',
+    #
     'HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD': 10,
     'HMAC_EXPIRES_IN': '5m',
     # This cache alias must be defined in Django's CACHES. 
@@ -182,21 +194,21 @@ Example
 ```
 # 7. Protecting user's hmac secret
 ```text
-Django settings.SECRET_KEY                 salt per user
-           │                               │   │
-           │                               │   │
-           └───────────►   pbkdf2_hmac  ◄──┘   │
-                                │              │
-                                │              │
-                                ▼              │
-                              256 bit key      │
-                                │              │
-                                │              │
-                                ▼              │
-   encrypt user secret  ◄───── aes/camellia    │
-                                ▲              │
-                                │              │
-                               iv ◄────────────┘
+HMAC_KD_PASSWORD / Django settings.SECRET_KEY    salt per user
+           │                                        │   │
+           │                                        │   │
+           └───────────►   pbkdf2_hmac  ◄───────────┘   │
+                                │                       │
+                                │                       │
+                                ▼                       │
+                              256 bit key               │
+                                │                       │
+                                │                       │
+                                ▼                       │
+   encrypt user secret  ◄───── aes/camellia             │
+                                ▲                       │
+                                │                       │
+                               iv ◄─────────────────────┘
 ```
 # 8. License
 Apache2 License
