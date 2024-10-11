@@ -2,7 +2,6 @@ import base64
 import datetime
 from datetime import timezone
 
-from django.conf import settings
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
 from vevde_security_utils.crypt.signatures import sign_string
@@ -31,6 +30,7 @@ failed_attempts_threshold = setting_for('HMAC_AUTH_FAILED_ATTEMPTS_THRESHOLD')
 hmac_expires_in = setting_for('HMAC_EXPIRES_IN')
 hmac_kill_switch_on = setting_for('HMAC_KILL_SWITCH')
 hmac_auth_header_name = setting_for('HMAC_AUTH_HEADER_NAME')
+hmac_kd_password = setting_for('HMAC_KD_PASSWORD')
 
 
 class HMACAuthentication(authentication.BaseAuthentication):
@@ -40,7 +40,7 @@ class HMACAuthentication(authentication.BaseAuthentication):
         enc_secret = base64.b64decode(hmac_key.secret.encode('utf-8'))
         enc_salt = base64.b64decode(hmac_key.salt.encode('utf-8'))
         secret = decrypt_hmac_secret(
-            enc_secret, settings.SECRET_KEY, enc_salt, hmac_key.cipher_algorithm
+            enc_secret, hmac_kd_password, enc_salt, hmac_key.cipher_algorithm
         )
 
         data = getattr(request, 'data', None)

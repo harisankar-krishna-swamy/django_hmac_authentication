@@ -1,7 +1,6 @@
 import base64
 from datetime import datetime, timezone
 
-from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.test import APITestCase
 from rest_framework.views import APIView
@@ -10,8 +9,11 @@ from vevde_security_utils.crypt.signatures import sign_string
 
 from django_hmac_authentication.authentication import HMACAuthentication
 from django_hmac_authentication.client_utils import prepare_string_to_sign
+from django_hmac_authentication.settings import setting_for
 from django_hmac_authentication.throttling import HMACApiKeyRateThrottle
 from tests.factories import ApiHMACKeyFactory, ApiHMACKeyUserFactory
+
+hmac_kd_password = setting_for('HMAC_KD_PASSWORD')
 
 
 class TestAuthenticationView(APIView):
@@ -67,7 +69,7 @@ class TestHMACAuthenticationBase(APITestCase):
     def _request_auth_header_fields(self, req_data, digest):
         secret = cipher_decrypt_hmac_secret(
             self.enc_secret,
-            settings.SECRET_KEY,
+            hmac_kd_password,
             self.enc_salt,
             self.hmac_key.cipher_algorithm,
         )

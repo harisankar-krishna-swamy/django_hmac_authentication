@@ -9,6 +9,7 @@ DEFAULTS = {
     'HMAC_EXPIRES_IN': None,
     'HMAC_CACHE_ALIAS': None,
     'HMAC_KILL_SWITCH': False,
+    'HMAC_KD_PASSWORD': settings.SECRET_KEY,
 }
 
 NAMES = set(DEFAULTS.keys())
