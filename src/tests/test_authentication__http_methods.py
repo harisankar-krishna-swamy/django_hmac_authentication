@@ -7,7 +7,7 @@ from vevde_security_utils.crypt.hmac import cipher_encrypted_hmac_secret
 from vevde_security_utils.crypt.settings import SUPPORTED_CIPHERS
 
 from django_hmac_authentication.authentication import HMACAuthentication
-from tests.factories import ApiHMACKeyFactory
+from tests.factories import ApiHMACKeyFactory, hmac_kd_password
 from tests.testing_utils import TestHMACAuthenticationBase
 
 HTTP_METHODS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE')
@@ -33,7 +33,7 @@ class TestHMACAuthentication(TestHMACAuthenticationBase):
             test_encrypted,
             test_enc_key,
             test_salt,
-        ) = cipher_encrypted_hmac_secret(cipher_algorithm)
+        ) = cipher_encrypted_hmac_secret(hmac_kd_password, cipher_algorithm)
         self.hmac_key = ApiHMACKeyFactory(
             user=self.user,
             salt=base64.b64encode(test_salt).decode('utf-8'),
