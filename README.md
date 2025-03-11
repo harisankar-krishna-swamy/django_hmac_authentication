@@ -19,16 +19,18 @@ Django hmac authentication with multiple encrypted hmac secrets per user
 | 12 | Supported encryption ciphers                    | `AES-256`, `CAMELLIA-256` to encrypt user's hmac secrets. Chosen randomly from the two                                        |
 | 13 | test_mode for keys                              | Keys have `test_mode` flag in Django admin set to default `False`. Authenticated requests will have attribute `api_hmac_key`  |
 | 14 | Option to separate HMAC key definition password | `HMAC_KD_PASSWORD` to set explicit key definition password. Default is Django `settings.SECRET_KEY`                           |
-### What's new 
+### What's new
+a) Backward incompatible change from `5.0.0` 
+> API keys must be re-issued to users. `5.0.0` uses `vevde-security-utils 2.0.0 with pkcs7 padding`
 
-a) Optional separate HMAC key definition password using setting `HMAC_KD_PASSWORD`.  
+b) Optional separate HMAC key definition password using setting `HMAC_KD_PASSWORD`.  
 
-b) API keys have `test_mode` with default value `False`. This flag can be modified in Django admin. All authenticated 
+c) API keys have `test_mode` with default value `False`. This flag can be modified in Django admin. All authenticated 
 requests will have attribute `api_hmac_key`. API views can change behavior on `request.api_hmac_key.test_mode` flag. For example,
 client apps can use `test_mode` keys to onboard i.e test-drive integration with backend and views can handle those `test_mode` 
 requests differently.
 
-c) From version 4.0.0 hmac utility functions are refactored to new package `vevde-security-utils`.
+d) From version 4.0.0 hmac utility functions are refactored to new package `vevde-security-utils`.
 Client apps and Fast API, Flask projects can use this new package to implement hmac authentication. 
 i.e. decoupling utilities from django package pip dependency.
 
