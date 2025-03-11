@@ -9,7 +9,7 @@ namespaces = false
 
 [project]
 name = "django_hmac_authentication"
-version = "5.0.0"
+version = "5.0.1"
 authors = [
   { name="Harisankar Krishna Swamy @ Vevde", email="harisankar.krishna@outlook.com" },
 ]
@@ -19,7 +19,8 @@ requires-python = ">=3.9.2"
 dependencies = [
     "Django>=3.2.18",
     "djangorestframework>=3.12.4",
-    "cryptography>=3.4.8"
+    "cryptography>=3.4.8",
+    "vevde-security-utils>=2.0.0"
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
