@@ -224,3 +224,6 @@ https://www.okta.com/au/identity-101/hmac/
 https://docs.python.org/3/library/hashlib.html
 
 https://learn.microsoft.com/en-us/azure/communication-services/tutorials/hmac-header-tutorial?pivots=programming-language-python
+
+#encryption #fileencryption #security #hmac #softwaresecurity #authentication #signature #symmetric #ciphers #hash #python  
+#django #fastapi #api #apisecurity
