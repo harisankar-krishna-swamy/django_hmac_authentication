@@ -1,5 +1,6 @@
 import base64
 import datetime
+import hmac
 from datetime import timezone
 
 from rest_framework import authentication
@@ -100,7 +101,7 @@ class HMACAuthentication(authentication.BaseAuthentication):
         computed_signature = self.compute_request_signature(
             request, auth_method, date_in, hmac_key
         )
-        if not computed_signature == signature:
+        if not hmac.compare_digest(computed_signature, signature):
             if failed_attempts_threshold and failed_attempts_threshold > 0:
                 self._revoke_key_on_failed_attempts(hmac_key)
             raise SignatureVerificationException()
